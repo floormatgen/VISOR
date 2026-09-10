@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import VISORObservation
 
 // MARK: - DeepLinkConfigurationError
 
@@ -188,12 +189,36 @@ public final class Router<Scene: NavigationScene> {
   /// The setter remains public so application-owned tab and split-view
   /// selectors can bind to it. Use ``select(root:)`` for imperative changes.
   /// A non-`nil` value must appear in `Scene.Root.allCases`.
+  /// Assignments also update ``selectedRootValues`` synchronously.
   public var selectedRoot: Scene.Root? {
-    willSet {
+    get {
+      access(keyPath: \.selectedRoot)
+      return selectedRootChannel.source.currentSnapshot()
+    }
+    set {
       if let newValue {
         treeContext.rootDestinations.require(newValue)
       }
+      guard selectedRootChannel.source.currentSnapshot() != newValue else {
+        selectedRootChannel.publish(newValue)
+        return
+      }
+      withMutation(keyPath: \.selectedRoot) {
+        selectedRootChannel.publish(newValue)
+      }
     }
+  }
+
+  /// A stable, read-only source for this Router's current root selection.
+  ///
+  /// Iteration emits the current selection, including `nil`, then the latest
+  /// assignments. Busy consumers may coalesce intermediate selections.
+  /// Use this source with `@Bound` or `@Reaction` in a ViewModel.
+  ///
+  /// Like ``selectedRoot``, this source belongs to this Router node.
+  /// ``select(root:)`` on a child updates its tree's root Router instead.
+  public nonisolated var selectedRootValues: ObservationSource<Scene.Root?> {
+    selectedRootChannel.source
   }
 
   /// The currently presented sheet, if any.
@@ -545,6 +570,9 @@ public final class Router<Scene: NavigationScene> {
 
   // MARK: Private
 
+  // The channel is the only selection storage. The public setter validates
+  // writes and preserves Apple Observation before publishing each assignment.
+  private nonisolated let selectedRootChannel = ObservationChannel<Scene.Root?>(nil)
   private let logger: Logger?
   /// Cached child Routers keyed by top-level destination. The cache is
   /// bounded by the tree's snapshotted Root.allCases and intentionally never

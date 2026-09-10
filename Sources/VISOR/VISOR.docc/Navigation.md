@@ -215,6 +215,22 @@ invisible navigation state. Check the returned `Bool` when the caller must react
 to rejection, and pass an `os.Logger` to the root initialiser to record those
 diagnostics.
 
+### Observing Root Selection
+
+``Router/selectedRootValues`` exposes the same canonical value as
+``Router/selectedRoot`` through a stable, read-only observation source.
+Binding writes, navigation methods and accepted deep links publish through the
+validated selection setter. SwiftUI observation of `selectedRoot` is unchanged.
+Use `@Bound` or `@Reaction` on `\FeatureViewModel.router.selectedRootValues`
+for model-owned reactions such as persisting the selected tab.
+
+The source includes the initial selection (`nil` for a new Router) and subsequent
+assignments, including clearing selection. It represents latest state, not a
+lossless navigation-event log; busy consumers may coalesce intermediate values.
+The source belongs to the same Router node as its property. To observe tree-wide
+selection, inject the scene's root Router: `select(root:)` from a child updates
+that root's property and source, not the child's local selection.
+
 ### Root and Modal Children
 
 Each root destination receives a cached child Router with its own navigation

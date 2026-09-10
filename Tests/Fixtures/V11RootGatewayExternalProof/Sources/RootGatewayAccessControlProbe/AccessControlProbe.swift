@@ -95,4 +95,12 @@ public func compileRootGatewayAccessBoundary() {
   #if VISOR_PROBE_ROUTER_IS_ACTIVE
   _ = router.isActive
   #endif
+
+  #if VISOR_PROBE_ROUTER_SELECTION_SOURCE_SETTER
+  router.selectedRootValues = router.selectedRootValues
+  #endif
+
+  #if VISOR_PROBE_ROUTER_SELECTION_CHANNEL
+  _ = router.selectedRootChannel
+  #endif
 }

@@ -82,7 +82,9 @@ run_rejected_batch \
   -Xswiftc -DVISOR_PROBE_FULL_SCREEN_SETTER \
   -Xswiftc -DVISOR_PROBE_ROUTER_LEVEL \
   -Xswiftc -DVISOR_PROBE_ROUTER_ROOT_DESTINATION \
-  -Xswiftc -DVISOR_PROBE_ROUTER_IS_ACTIVE
+  -Xswiftc -DVISOR_PROBE_ROUTER_IS_ACTIVE \
+  -Xswiftc -DVISOR_PROBE_ROUTER_SELECTION_SOURCE_SETTER \
+  -Xswiftc -DVISOR_PROBE_ROUTER_SELECTION_CHANNEL
 
 verify_inaccessible viewModel internal
 verify_inaccessible name
@@ -94,6 +96,8 @@ verify_get_only presentingFullScreen
 verify_inaccessible level
 verify_inaccessible rootDestination
 verify_inaccessible isActive
+verify_get_only selectedRootValues
+verify_inaccessible selectedRootChannel private
 
 run_rejected_batch \
   RootGatewayAccessControlProbe \
