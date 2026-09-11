@@ -364,10 +364,8 @@ This is the preferred navigation path for feature code.
 
 ## Scene lifetime
 
-Observation follows SwiftUI structural identity, not appearance. A navigation
-push or tab switch preserves the retained screen's observation and content;
-actual removal cancels and joins its session. Nested ViewModels and local view
-State therefore survive covering a screen without special hoisting or caches.
+Observation follows SwiftUI structural identity, not appearance. Actual owner
+removal cancels and joins its session.
 
 The generated owner normally observes through all scene phases. Use `observationPolicy: .pauseInBackground` or `.pauseWhenInactive` when gated presentation or renderer work should stop with the scene.
 

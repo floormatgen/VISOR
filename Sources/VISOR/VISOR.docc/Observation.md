@@ -433,14 +433,12 @@ authored initialisers receive their action routes before binding. See
 
 ViewModel retention, observation-session ownership, and producer ownership are separate lifetimes. Generated `@State` retains the ViewModel for the annotated view's SwiftUI structural identity. Within that identity, host State retains a lifetime object that owns the observation root task. The appearance task only starts that lifetime; its cancellation does not end observation. Pausing or ending observation does not stop producer-owned channels or domain work; their owner manages that lifetime separately.
 
-Pushing another destination or switching tabs does not withdraw the retained
-screen's content or restart its initial reactions. Its subscriptions remain
-active, so edits from another screen continue to update State. Content identity,
-nested ViewModels and scroll position survive ordinary covering and return.
+Pushing another destination or switching tabs does not restart the retained
+screen's initial reactions. Its subscriptions remain active, so edits from
+another screen continue to update State.
 Actual removal or ViewModel identity replacement releases the lifetime object
 and cancels its root task. That root joins the source session before releasing
-the identity lease. VISOR cannot preserve a subtree that the application or
-SwiftUI itself removes.
+the identity lease.
 
 Hoist `@LazyViewModel` to the stable SwiftUI root of a longer-lived flow. Mounting two owners for the same ViewModel identity is rejected rather than creating duplicate subscriptions.
 

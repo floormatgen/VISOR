@@ -58,6 +58,11 @@ private enum OwnerTab: Hashable {
   case other
 }
 
+private enum OwnerDisappearance {
+  case tabSwitch
+  case hostDetachment
+}
+
 @MainActor
 @Observable
 private final class OwnerTabSelection {
@@ -186,74 +191,14 @@ extension ViewModelObservationOwnerTests {
 
   @Test(.timeLimit(.minutes(1)))
   @MainActor
-  func `Tab switches preserve content identity and keep observation current`() async throws {
-    let service = OwnerService()
-    let statusService = OwnerStatusService()
-    let reactionGate = ControllableOperation<Void, Never>()
-    let viewModel = OwnerSourceBackedViewModel(
-      service: service,
-      statusService: statusService,
-      reactionGate: reactionGate,
-    )
-    let factory = OwnerSourceBackedViewModel.Factory { viewModel }
-    let selection = OwnerTabSelection()
-    var contentIdentities = [UUID]()
-    let contentAppeared = TestEventCounter()
-    let contentDisappeared = TestEventCounter()
-    let root = AnyView(
-      GeneratedOwnerTabHost(
-        selection: selection,
-        contentAppeared: contentAppeared,
-        contentDisappeared: contentDisappeared,
-        contentIdentityAppeared: { contentIdentities.append($0) },
-      )
-      .environment(factory)
-    )
-    let hostingView = NSHostingView(rootView: root)
-    hostingView.frame = NSRect(x: 0, y: 0, width: 320, height: 200)
-    let window = NSWindow(
-      contentRect: hostingView.frame,
-      styleMask: [.titled],
-      backing: .buffered,
-      defer: false,
-    )
-    window.isReleasedWhenClosed = false
-    window.contentView = hostingView
-    window.orderFront(nil)
-    defer {
-      hostingView.rootView = AnyView(EmptyView())
-      hostingView.layoutSubtreeIfNeeded()
-      window.contentView = nil
-      window.close()
-    }
+  func `Tab switches retain the ViewModel and keep observation current`() async throws {
+    try await verifyRetainedObservation(across: .tabSwitch)
+  }
 
-    hostingView.layoutSubtreeIfNeeded()
-    try await contentAppeared.wait()
-
-    for (index, status) in [OwnerStatus.loading, .held].enumerated() {
-      let cycle = index + 1
-      selection.value = .other
-      hostingView.layoutSubtreeIfNeeded()
-      try await contentDisappeared.wait(untilEventCount: cycle)
-      #expect(service.activeObservationCountForProof == 1)
-      #expect(statusService.activeObservationCountForProof == 1)
-
-      await statusService.publish(status)
-      if status == .loading {
-        try await reactionGate.waitUntilStarted()
-        reactionGate.resolveAllInvocations(with: .success(()))
-      }
-      try await viewModel.statusReactions.wait(untilEventCount: cycle + 1)
-      #expect(viewModel.state.status == status)
-      #expect(viewModel.state.reactedStatus == status)
-
-      selection.value = .observed
-      hostingView.layoutSubtreeIfNeeded()
-      try await contentAppeared.wait(untilEventCount: cycle + 1)
-      #expect(viewModel.statusReactions.count == cycle + 1)
-      #expect(contentIdentities.count == cycle + 1)
-      #expect(Set(contentIdentities).count == 1)
-    }
+  @Test(.timeLimit(.minutes(1)))
+  @MainActor
+  func `Retained host disappearance preserves gated content identity`() async throws {
+    try await verifyRetainedObservation(across: .hostDetachment)
   }
 
   @Test(.timeLimit(.minutes(1)))
@@ -615,6 +560,111 @@ extension ViewModelObservationOwnerTests {
   }
 
   // MARK: Private
+
+  @MainActor
+  private func verifyRetainedObservation(across disappearance: OwnerDisappearance) async throws {
+    let service = OwnerService()
+    let statusService = OwnerStatusService()
+    let reactionGate = ControllableOperation<Void, Never>()
+    let viewModel = OwnerSourceBackedViewModel(
+      service: service,
+      statusService: statusService,
+      reactionGate: reactionGate,
+    )
+    let factoryCreations = TestEventCounter()
+    let factory = OwnerSourceBackedViewModel.Factory {
+      factoryCreations.record()
+      return viewModel
+    }
+    let selection = OwnerTabSelection()
+    var contentIdentities = [UUID]()
+    let contentAppeared = TestEventCounter()
+    let contentDisappeared = TestEventCounter()
+    let root = AnyView(
+      Group {
+        switch disappearance {
+        case .tabSwitch:
+          GeneratedOwnerTabHost(
+            selection: selection,
+            contentAppeared: contentAppeared,
+            contentDisappeared: contentDisappeared,
+            contentIdentityAppeared: { contentIdentities.append($0) },
+          )
+
+        case .hostDetachment:
+          GeneratedOwnerScreen(
+            contentAppeared: contentAppeared,
+            contentDisappeared: contentDisappeared,
+            contentIdentityAppeared: { contentIdentities.append($0) },
+          )
+        }
+      }
+      .environment(factory)
+    )
+    let hostingView = NSHostingView(rootView: root)
+    hostingView.frame = NSRect(x: 0, y: 0, width: 320, height: 200)
+    let window = NSWindow(
+      contentRect: hostingView.frame,
+      styleMask: [.titled],
+      backing: .buffered,
+      defer: false,
+    )
+    window.isReleasedWhenClosed = false
+    window.contentView = hostingView
+    window.orderFront(nil)
+    defer {
+      hostingView.rootView = AnyView(EmptyView())
+      hostingView.layoutSubtreeIfNeeded()
+      window.contentView = nil
+      window.close()
+    }
+
+    hostingView.layoutSubtreeIfNeeded()
+    try await contentAppeared.wait()
+    #expect(factoryCreations.count == 1)
+    #expect(contentIdentities.count == 1)
+
+    for (index, status) in [OwnerStatus.loading, .held].enumerated() {
+      let cycle = index + 1
+      switch disappearance {
+      case .tabSwitch:
+        selection.value = .other
+      case .hostDetachment:
+        window.contentView = nil
+      }
+      hostingView.layoutSubtreeIfNeeded()
+      try await contentDisappeared.wait(untilEventCount: cycle)
+      #expect(service.activeObservationCountForProof == 1)
+      #expect(statusService.activeObservationCountForProof == 1)
+
+      await statusService.publish(status)
+      if status == .loading {
+        try await reactionGate.waitUntilStarted()
+        reactionGate.resolveAllInvocations(with: .success(()))
+      }
+      try await viewModel.statusReactions.wait(untilEventCount: cycle + 1)
+      #expect(viewModel.state.status == status)
+      #expect(viewModel.state.reactedStatus == status)
+
+      switch disappearance {
+      case .tabSwitch:
+        selection.value = .observed
+      case .hostDetachment:
+        window.contentView = hostingView
+      }
+      hostingView.layoutSubtreeIfNeeded()
+      try await contentAppeared.wait(untilEventCount: cycle + 1)
+      #expect(factoryCreations.count == 1)
+      #expect(viewModel.statusReactions.count == cycle + 1)
+      #expect(contentIdentities.count == cycle + 1)
+      if disappearance == .hostDetachment {
+        // Native TabView can rebuild descendants independently of VISOR.
+        // Reattach the same host to test our gate's identity retention without
+        // relying on the platform tab container's subtree-retention behaviour.
+        #expect(Set(contentIdentities).count == 1)
+      }
+    }
+  }
 
   @MainActor
   private func duplicateOwnerProofHost(
