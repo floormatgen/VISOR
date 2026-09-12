@@ -6,9 +6,13 @@ import SwiftSyntaxMacros
 
 private enum ViewModelFixIt: String, FixItMessage {
   case addMainActor
+  case makeFinal
 
   var message: String {
-    "add '@MainActor'"
+    switch self {
+    case .addMainActor: "add '@MainActor'"
+    case .makeFinal: "make the ViewModel final"
+    }
   }
 
   var fixItID: MessageID {
@@ -190,10 +194,10 @@ extension ClassDeclSyntax {
 
   fileprivate var hasConformanceCompatiblePublicState: Bool {
     let access = accessLevel(of: self)
-    guard access == "public" || access == "open" else { return true }
+    guard access == "public" else { return true }
     guard let state = nestedViewModelState else { return false }
     let stateAccess = accessLevel(of: state)
-    guard stateAccess == "public" || stateAccess == "open" else {
+    guard stateAccess == "public" else {
       return false
     }
     if let stateProperty = stableViewModelStateProperty {
@@ -245,7 +249,7 @@ extension ClassDeclSyntax {
     }
 
     let access = accessLevel(of: self)
-    let prefix = access == "public" || access == "open" ? "public " : ""
+    let prefix = access == "public" ? "public " : ""
     let stateDeclaration: DeclSyntax? = generatesState
       ? DeclSyntax(stringLiteral: "\(prefix)let state: State")
       : nil
@@ -549,6 +553,29 @@ public struct ViewModelMacro: MemberMacro, MemberAttributeMacro, ExtensionMacro 
       ))
       return []
     }
+    guard viewModel.modifiers.contains(where: { $0.name.text == "final" }) else {
+      let position = viewModel.classKeyword.positionAfterSkippingLeadingTrivia
+      var changes: [FixIt.Change] = [
+        .replaceText(
+          range: position..<position,
+          with: "final ",
+          in: Syntax(viewModel),
+        )
+      ]
+      if let modifier = viewModel.modifiers.first(where: { $0.name.text == "open" }) {
+        changes.append(.replaceText(
+          range: modifier.name.positionAfterSkippingLeadingTrivia..<modifier.name.endPositionBeforeTrailingTrivia,
+          with: "public",
+          in: Syntax(viewModel),
+        ))
+      }
+      context.diagnose(Diagnostic(
+        node: Syntax(viewModel.name),
+        message: VISORDiagnostic.viewModelRequiresFinal,
+        fixIts: [FixIt(message: ViewModelFixIt.makeFinal, changes: changes)],
+      ))
+      return []
+    }
     guard viewModel.attributes.visorContains(named: AttributeName.observable)
     else {
       context.diagnose(Diagnostic(
@@ -600,6 +627,7 @@ public struct ViewModelMacro: MemberMacro, MemberAttributeMacro, ExtensionMacro 
   ) throws -> [AttributeSyntax] {
     guard
       let viewModel = declaration.as(ClassDeclSyntax.self),
+      viewModel.modifiers.contains(where: { $0.name.text == "final" }),
       let state = member.as(ClassDeclSyntax.self),
       state.name.text == "State",
       !state.attributes.visorContains(named: AttributeName.observable),
@@ -635,6 +663,7 @@ public struct ViewModelMacro: MemberMacro, MemberAttributeMacro, ExtensionMacro 
   ) throws -> [ExtensionDeclSyntax] {
     guard
       let viewModel = declaration.as(ClassDeclSyntax.self),
+      viewModel.modifiers.contains(where: { $0.name.text == "final" }),
       let state = viewModel.nestedViewModelState
     else {
       return []
@@ -738,7 +767,7 @@ public struct ViewModelMacro: MemberMacro, MemberAttributeMacro, ExtensionMacro 
       return []
     }
 
-    if analysis.hasActionEnum && !analysis.hasHandleMethod {
+    if analysis.hasActionEnum, !analysis.hasHandleMethod {
       context.diagnose(Diagnostic(
         node: Syntax(viewModel),
         message: VISORDiagnostic.actionWithoutHandle,
@@ -768,7 +797,7 @@ public struct ViewModelMacro: MemberMacro, MemberAttributeMacro, ExtensionMacro 
     let groups = sourceObservationAnalysis.groups
 
     let access = accessLevel(of: viewModel)
-    let prefix = access == "public" || access == "open" ? "public " : ""
+    let prefix = access == "public" ? "public " : ""
     var members: [DeclSyntax] = [
       DeclSyntax(stringLiteral:
         "\(prefix)typealias Factory = ViewModelFactory<\(viewModel.name.text)>"),

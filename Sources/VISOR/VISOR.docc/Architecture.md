@@ -146,6 +146,7 @@ final class CounterViewModel {
 The shape is intentional:
 
 - `@MainActor` is explicit on every ViewModel; consumer targets do not need MainActor-by-default.
+- ViewModels are `final`: each concrete model owns its State, Action and binding contract. Share behaviour through composition and injected protocols rather than subclasses.
 - `@Observable` applies to the ViewModel, not its nested State declaration.
 - State is a plain `final class`. `@ViewModel` attaches its MainActor Observation accessors and routed field selectors.
 - `state` is a stored `let`, preserving one State identity for SwiftUI ownership and scoped testing. `@ViewModel` synthesises it when safe, or accepts an authored property for custom construction.

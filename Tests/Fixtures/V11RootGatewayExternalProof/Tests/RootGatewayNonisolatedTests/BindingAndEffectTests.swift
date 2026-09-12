@@ -98,7 +98,7 @@ struct BindingAndEffectTests {
 
   // MARK: Private
 
-  private func bindings<Model: ViewModel>(for model: Model) -> Model.Bindings {
+  private func bindings<Model: ViewModel>(for model: Model) -> ViewModelBindings<Model> {
     model.bindings
   }
 

@@ -11,6 +11,7 @@ enum VISORDiagnostic: DiagnosticMessage {
   case actionWithoutHandle
   case handleWrongLabel
   case stateClassNotFinal
+  case viewModelRequiresFinal
   case lazyViewModelStateAliasCollision
   case lazyViewModelPresentationPairRequired
   case viewModelRequiresMainActor
@@ -57,6 +58,9 @@ enum VISORDiagnostic: DiagnosticMessage {
 
     case .stateClassNotFinal:
       "State class must be 'final'"
+
+    case .viewModelRequiresFinal:
+      "@ViewModel requires a final class; share behaviour through composition instead of inheritance"
 
     case .lazyViewModelStateAliasCollision:
       "@LazyViewModel could not generate 'state' because this view already declares a member named 'state'; use viewModel.state or rename the existing member"
@@ -111,6 +115,7 @@ enum VISORDiagnostic: DiagnosticMessage {
       case .actionWithoutHandle: "actionWithoutHandle"
       case .handleWrongLabel: "handleWrongLabel"
       case .stateClassNotFinal: "stateClassNotFinal"
+      case .viewModelRequiresFinal: "viewModelRequiresFinal"
       case .lazyViewModelStateAliasCollision: "lazyViewModelStateAliasCollision"
       case .lazyViewModelPresentationPairRequired: "lazyViewModelPresentationPairRequired"
       case .viewModelRequiresMainActor: "viewModelRequiresMainActor"

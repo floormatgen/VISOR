@@ -7,7 +7,8 @@
 
 // MARK: - ViewModel Macro
 
-/// Attach to an explicitly MainActor-isolated, `@Observable` ViewModel class.
+/// Attach to an explicitly MainActor-isolated, final `@Observable` ViewModel class.
+/// Share behaviour through composition and injected protocols, not inheritance.
 /// The macro adds VISOR-owned Observation accessors to a plain nested
 /// `final class State`, groups `@Bound(source:)` and `@Reaction(source:)`
 /// entries into declarative recipes, and requires a stable stored `let state`.

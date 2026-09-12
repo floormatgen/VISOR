@@ -127,9 +127,22 @@ verify_inaccessible _visorMakeObservationRecipes
 
 run_rejected_batch \
   RootGatewayAccessControlProbe \
-  "binding payload and conditional declaration contracts" \
+  "ViewModel finality, binding payload and conditional declaration contracts" \
   -Xswiftc -DVISOR_PROBE_BINDING_PAYLOAD \
-  -Xswiftc -DVISOR_PROBE_CONDITIONAL_BINDING_ACTION
+  -Xswiftc -DVISOR_PROBE_CONDITIONAL_BINDING_ACTION \
+  -Xswiftc -DVISOR_PROBE_NON_FINAL_MODEL \
+  -Xswiftc -DVISOR_PROBE_OPEN_MODEL \
+  -Xswiftc -DVISOR_PROBE_MODEL_SUBCLASS
+
+case "$probe_output" in
+  *"@ViewModel requires a final class; share behaviour through composition instead of inheritance"*) ;;
+  *) report_missing_diagnostic "non-final ViewModel" ;;
+esac
+
+case "$probe_output" in
+  *"inheritance from a final class 'NonisolatedBindingViewModel'"*) ;;
+  *) report_missing_diagnostic "ViewModel subclass" ;;
+esac
 
 case "$probe_output" in
   *"cannot convert value of type 'Int' to expected argument type 'String'"*) ;;

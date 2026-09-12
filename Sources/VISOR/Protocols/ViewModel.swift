@@ -11,7 +11,7 @@ import Observation
 
 /// The base protocol for all ViewModels in the VISOR architecture.
 ///
-/// Conforming types are explicitly MainActor-isolated `@Observable` classes
+/// Conforming types are explicitly MainActor-isolated, final `@Observable` classes
 /// with a stable routed `State` instance and an optional `Action` enum for
 /// user-initiated mutations. `@ViewModel` generates the State gateway,
 /// observation recipe, ownership token and stable `bindings` namespace.
@@ -29,15 +29,12 @@ public protocol ViewModel: Observable, AnyObject {
 
   /// Generated typed binding selectors. Public only for macro expansions.
   associatedtype _VISORBindingSelectors
-  /// The generated binding namespace, inferred from the retained property.
-  /// An associated type preserves conformance for subclassable models too.
-  associatedtype Bindings = ViewModelBindings<Self>
 
   /// The generated binding selector namespace.
   static var _visorBindingSelectors: _VISORBindingSelectors { get }
 
   /// SwiftUI bindings sharing a stable, model-owned reference root.
-  var bindings: Bindings { get }
+  var bindings: ViewModelBindings<Self> { get }
 
   /// The current stable view state. Conforming models retain this as a stored
   /// `let state` property.

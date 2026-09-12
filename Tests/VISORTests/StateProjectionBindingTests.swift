@@ -131,6 +131,9 @@ private final class CustomProjectionBindingModel {
 @Suite(.timeLimit(.minutes(1)))
 @MainActor
 struct StateProjectionBindingTests {
+
+  // MARK: Internal
+
   @Test
   func `Optional action bindings keep reads but stop writes after model deinitialisation`() throws {
     // Given
@@ -306,10 +309,10 @@ struct StateProjectionBindingTests {
   }
 
   @Test
-  func `Binding roots are stable across copies and instances route independently`() {
+  func `Generic binding access preserves roots and instances route independently`() {
     let first = ProjectionBindingModel()
     let second = ProjectionBindingModel()
-    let copy = first.bindings
+    let copy = bindings(for: first)
     #expect(copy._visorStorage === first.bindings._visorStorage)
     #expect(first.bindings._visorStorage !== second.bindings._visorStorage)
     first.bindings.isPickerPresented.wrappedValue = false
@@ -342,5 +345,11 @@ struct StateProjectionBindingTests {
       #expect(binding.wrappedValue)
       #expect(model.handledCount == 0)
     }
+  }
+
+  // MARK: Private
+
+  private func bindings<Model: ViewModel>(for model: Model) -> ViewModelBindings<Model> {
+    model.bindings
   }
 }

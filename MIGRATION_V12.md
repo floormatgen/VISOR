@@ -4,6 +4,19 @@ VISOR 12 moves SwiftUI binding ownership from State to the ViewModel and adds
 action bindings for get-only computed State properties. This is a major-version
 change; do not adopt it as a source-compatible 11.x update.
 
+## Make ViewModels final
+
+`@ViewModel` now requires a `final class`. Add `final` to non-final models;
+replace `open class` with `public final class`. The macro diagnoses unsupported
+declarations and offers a fix-it. If a model has subclasses, first move shared
+behaviour into composed collaborators or injected protocol dependencies, then
+give each concrete model its own State and Action contract.
+
+The protocol's binding type is now exactly `ViewModelBindings<Self>`. There is
+no `Bindings` associated type or alternative binding implementation. Update
+generic helpers returning `Model.Bindings` to return `ViewModelBindings<Model>`;
+no additional same-type constraints are needed.
+
 ## Replace the binding entry point
 
 Keep existing `@StateBinding(\State.field)` annotations and synchronous handlers.
@@ -89,10 +102,9 @@ deinitialises, binding writes do nothing. Each model dispatches its own actions,
 even if models share a State instance.
 
 `@ViewModel` generates the new `bindings`, `_VISORBindingSelectors` and
-`_visorBindingSelectors` protocol requirements. The `Bindings` associated type
-is inferred from the generated property; generic forwarding can return
-`Model.Bindings`. Subclassable ViewModels remain supported. Hand-written `ViewModel`
-conformers must implement them and retain their `ViewModelBindings` value once.
+`_visorBindingSelectors` protocol requirements. Hand-written `ViewModel`
+conformers must be final, implement these requirements and retain their
+`ViewModelBindings<Self>` value once.
 The underscored binding route types, State route requirement and connection hook
 from VISOR 11 are removed. Do not call or recreate them.
 
