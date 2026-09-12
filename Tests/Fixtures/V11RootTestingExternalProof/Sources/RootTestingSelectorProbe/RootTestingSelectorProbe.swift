@@ -24,14 +24,32 @@ final class RootSelectorProbeViewModel {
       details.count * 2
     }
 
+    var hasDetails: Bool {
+      details.count > 0
+    }
+
     // MARK: Private
 
     private var hidden = 0
 
   }
 
+  enum Action {
+    @StateBinding(\State.hasDetails)
+    case detailsChanged(Bool)
+  }
+
   let state = State()
+
+  func handle(_: Action) { }
 }
+
+#if VISOR_PROBE_BOUND_PROJECTION_SELECTOR
+@MainActor
+func probeBoundProjectionSelector(_ test: ObservationTest<RootSelectorProbeViewModel>) {
+  test.expect(\.hasDetails, hasExactChanges: [true])
+}
+#endif
 
 @MainActor
 func verifySelectorProbeBaseline(

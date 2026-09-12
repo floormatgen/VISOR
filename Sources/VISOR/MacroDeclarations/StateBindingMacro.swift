@@ -4,6 +4,9 @@
 /// The model must implement synchronous `handle(_:)`. The handler owns the
 /// commit through `updateState(_:to:)`; rejecting a proposed value is allowed.
 /// Source projections and `updateState` never dispatch a binding action.
+/// Select a stored field or a synchronous, get-only computed property declared
+/// directly in State. Computed bindings route writes only: the handler updates
+/// their underlying stored fields, not the computed property itself.
 ///
 /// ```swift
 /// enum Action {

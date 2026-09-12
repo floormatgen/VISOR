@@ -142,3 +142,31 @@ case "$probe_output" in
 esac
 
 echo "Root gateway metadata and observation lifecycle controls remain package-inaccessible."
+
+run_rejected_batch \
+  RootGatewayAccessControlProbe \
+  "computed binding contracts" \
+  -Xswiftc -DVISOR_PROBE_PROJECTION_UPDATE \
+  -Xswiftc -DVISOR_PROBE_PROJECTION_SETTER \
+  -Xswiftc -DVISOR_PROBE_PROJECTION_PAYLOAD \
+  -Xswiftc -DVISOR_PROBE_V12_BINDING_NAMESPACE
+
+verify_get_only isDisabled
+case "$probe_output" in
+  *"cannot convert value of type 'Bool' to expected argument type 'String'"*) ;;
+  *) report_missing_diagnostic "computed binding payload type" ;;
+esac
+case "$probe_output" in
+  *"has no member 'isDisabled'"*) ;;
+  *) report_missing_diagnostic "computed binding updateState" ;;
+esac
+
+for missing_member in bindableState displayOnly hidden
+do
+  case "$probe_output" in
+    *"has no member '$missing_member'"*|*"has no dynamic member '$missing_member'"*) ;;
+    *) report_missing_diagnostic "model binding namespace: $missing_member" ;;
+  esac
+done
+
+echo "Computed bindings preserve get-only properties and stored-field mutation boundaries."

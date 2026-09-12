@@ -69,6 +69,20 @@ struct BindingAndEffectTests {
   }
 
   @Test
+  func `Public computed bindings route actions across package boundaries`() {
+    let model = MainActorBindingViewModel()
+    let binding = model.bindings.isDisabled
+    #expect(binding.wrappedValue)
+    binding.wrappedValue = false
+    binding.wrappedValue = false
+    #expect(model.handledValues == [true, true])
+    #expect(model.state.isEnabled)
+    model.updateState(\.isEnabled, to: false)
+    #expect(binding.wrappedValue)
+    #expect(model.handledValues == [true, true])
+  }
+
+  @Test
   func `Typed namespaces support generic forwarding and unannotated stored writes`() {
     let model = MainActorBindingViewModel()
     let controls: ViewModelBindings<MainActorBindingViewModel> = bindings(for: model)

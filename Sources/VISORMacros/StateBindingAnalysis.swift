@@ -26,7 +26,7 @@ enum StateBindingDiagnostic: String, DiagnosticMessage {
     switch self {
     case .placement: "@StateBinding requires a case in a @ViewModel's nested Action enum"
     case .declaration: "@StateBinding requires one case with exactly one associated value"
-    case .selection: "@StateBinding must select one accessible, routed stored State field"
+    case .selection: "@StateBinding must select one accessible, routed stored State field or synchronous get-only computed State property"
     case .duplicate: "each State field can have only one @StateBinding action"
     case .synchronousHandler: "@StateBinding requires synchronous, nonthrowing handle(_ action: Action); move async work into managed effects"
     case .conditional: "@StateBinding cases must be declared directly in Action, outside conditional compilation blocks"
@@ -63,6 +63,9 @@ struct StateBindingAnalysis {
     let fields = Set(state.memberBlock.members.compactMap {
       stateFieldSpec(from: $0.decl)
     }.filter { $0.accessPrefix != "private " }.map(\.name))
+    let projections = Set(state.memberBlock.members.compactMap {
+      stateProjectionSpec(from: $0.decl)
+    }.map(\.name))
 
     for member in action.memberBlock.members {
       if let conditional = member.decl.as(IfConfigDeclSyntax.self) {
@@ -93,7 +96,7 @@ struct StateBindingAnalysis {
       }
       guard
         let name = stateBindingField(attribute),
-        fields.contains(name)
+        fields.contains(name) || projections.contains(name)
       else {
         diagnostics.append((Syntax(attribute), .selection))
         continue

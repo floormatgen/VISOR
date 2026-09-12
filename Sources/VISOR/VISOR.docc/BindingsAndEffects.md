@@ -50,7 +50,11 @@ stored field commits through `updateState`. Writing an annotated `bindings.field
 inside its own handler would dispatch the action again and recurse.
 
 The key path must be `\State.field`, selecting one supported top-level stored
-field with an accessible getter. Only one action may bind each field. Payload
+field or synchronous get-only computed property with an accessible getter.
+The property must be declared directly in State, not an extension or conditional
+compilation block. Nested key paths, subscripts, stored constants, writable
+computed properties, and async or throwing getters are not supported.
+Only one action may bind each property. Payload
 types are checked by the compiler. Cases with multiple payloads, default values,
 multiple declarations, or conditional compilation are diagnosed. This includes
 an `Action` enum placed inside `#if`, `#elseif`, or `#else` in the ViewModel;
@@ -61,6 +65,53 @@ Opting in requires a synchronous, nonthrowing `handle(_ action: Action)` in the
 ViewModel declaration. Existing async handlers remain supported for ViewModels
 without action bindings. Move asynchronous work from a binding handler into an
 effect owner; no separate reducer or dispatch API is required.
+
+### Bind a computed projection
+
+Keep derived values get-only and route proposed writes to the action that owns
+their meaning:
+
+```swift
+@MainActor
+@Observable
+@ViewModel
+final class PickerViewModel {
+  enum Sheet { case picker, settings }
+
+  final class State {
+    private(set) var activeSheet: Sheet?
+    var isPickerPresented: Bool { activeSheet == .picker }
+  }
+
+  enum Action {
+    @StateBinding(\State.isPickerPresented)
+    case pickerPresentationChanged(Bool)
+  }
+
+  func handle(_ action: Action) {
+    switch action {
+    case .pickerPresentationChanged(let presented):
+      guard !presented, state.activeSheet == .picker else { return }
+      updateState(\.activeSheet, to: nil)
+    }
+  }
+}
+
+// Inside @LazyViewModel content:
+// .sheet(isPresented: bindings.isPickerPresented) { PickerContent() }
+```
+
+Only annotated computed properties gain model binding selectors. Their getter
+reads the authored property; their setter synchronously dispatches the action.
+VISOR generates no inverse setter, backing value, or observation subscription.
+Observation tracks the stored dependencies actually read by the getter; it does
+not make a nested member of a value-type stored field independently observable.
+
+The computed property remains get-only and gains no State mutation selector,
+so `updateState(\.isPickerPresented, to: false)` and strict `hasExactChanges`
+expectations for it fail to compile. Commit and
+assert changes to `activeSheet` instead. Computed reads do not add mutation-history
+entries; only the underlying stored-field assignments are recorded.
 
 ### Identity and construction
 

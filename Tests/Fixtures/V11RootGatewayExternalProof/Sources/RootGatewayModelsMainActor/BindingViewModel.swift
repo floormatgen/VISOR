@@ -13,13 +13,33 @@ public final class MainActorBindingViewModel {
   // MARK: Public
 
   public final class State {
+
+    // MARK: Public
+
     public private(set) var isEnabled = false
     public private(set) var preparedValue = 0
+
+    public var displayOnly: String {
+      isEnabled.description
+    }
+
+    public var isDisabled: Bool {
+      !isEnabled
+    }
+
+    // MARK: Private
+
+    private var hidden: Bool {
+      isEnabled
+    }
+
   }
 
   public enum Action {
     @StateBinding(\State.isEnabled)
     case enabledChanged(Bool)
+    @StateBinding(\State.isDisabled)
+    case disabledChanged(Bool)
   }
 
   public private(set) var handledValues = [Bool]()
@@ -29,6 +49,10 @@ public final class MainActorBindingViewModel {
     case .enabledChanged(let value):
       handledValues.append(value)
       updateState(\.isEnabled, to: value)
+
+    case .disabledChanged(let value):
+      handledValues.append(!value)
+      updateState(\.isEnabled, to: !value)
     }
   }
 
@@ -51,6 +75,9 @@ public struct MainActorBindingView: View {
   public init() { }
 
   public var content: some View {
-    Toggle("Enabled", isOn: bindings.isEnabled)
+    VStack {
+      Toggle("Enabled", isOn: bindings.isEnabled)
+      Toggle("Disabled", isOn: bindings.isDisabled)
+    }
   }
 }

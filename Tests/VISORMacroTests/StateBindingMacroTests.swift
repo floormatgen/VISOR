@@ -21,7 +21,6 @@ struct StateBindingMacroTests {
     (#"@StateBinding(\Other.State.count) case changed(Int)"#, "selection"),
     (#"@StateBinding(\State.count.description) case changed(String)"#, "selection"),
     (#"@StateBinding(\State.secret) case changed(Int)"#, "selection"),
-    (#"@StateBinding(\State.computed) case changed(Int)"#, "selection"),
     (#"@StateBinding(\State.constant) case changed(Int)"#, "selection"),
   ])
   func `Invalid declarations produce a focused diagnostic`(action: String, expected: String) throws {

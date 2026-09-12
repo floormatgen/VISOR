@@ -422,7 +422,7 @@ Inside a `@LazyViewModel` view, the generated convenience is:
 TextField("Search", text: bindings.query)
 ```
 
-This keeps production Observation invalidation and test-history capture on the same synchronous route. Mutation selectors are generated only for supported top-level stored fields whose getter is at least `fileprivate`; they do not recursively expose nested members.
+This keeps production Observation invalidation and test-history capture on the same synchronous route. Mutation selectors are generated only for supported top-level stored fields whose getter is at least `fileprivate`; they do not recursively expose nested members. Get-only computed properties explicitly selected by `@StateBinding` also gain binding selectors, but these cannot be used for `updateState` or strict mutation-history expectations.
 
 With `@StateBinding(\State.field)` on an action case, `viewModel.bindings.field`
 proposes writes to synchronous `handle(_:)`. The handler commits using

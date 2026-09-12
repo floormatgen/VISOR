@@ -14,7 +14,11 @@ func viewModelBindingMembers(
   let fields = state.memberBlock.members.compactMap {
     stateFieldSpec(from: $0.decl)
   }.filter { $0.accessPrefix != "private " }
-  let selections = fields.map { ($0.name, $0.accessPrefix) }
+  let projections = state.memberBlock.members.compactMap {
+    stateProjectionSpec(from: $0.decl)
+  }.filter { projection in bindings.contains { $0.fieldName == projection.name } }
+  let selections = fields.map { ($0.name, $0.accessPrefix) } +
+    projections.map { ($0.name, $0.accessPrefix) }
   var members: [DeclSyntax] = selections.map { name, _ in
     let write: String
     if let binding = bindings.first(where: { $0.fieldName == name }) {

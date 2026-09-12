@@ -230,6 +230,24 @@ retains one stable binding root, including models with authored initialisers.
 Raw State writes never dispatch actions. See [Migrating to VISOR 12](MIGRATION_V12.md)
 for the breaking binding changes.
 
+The same annotation also supports get-only computed State properties:
+
+```swift
+// Inside State:
+var isPickerPresented: Bool { activeSheet == .picker }
+
+// Inside Action:
+@StateBinding(\State.isPickerPresented)
+case pickerPresentationChanged(Bool)
+
+// Inside @LazyViewModel content:
+Toggle("Picker", isOn: bindings.isPickerPresented)
+```
+
+The handler updates the underlying stored state. No inverse setter or duplicate
+Boolean is needed. Computed selectors cannot be passed to `updateState` or
+strict mutation-history expectations. See [Action bindings and managed effects](Sources/VISOR/VISOR.docc/BindingsAndEffects.md).
+
 Retain a `LatestEffect` for replaceable preparation, `SerialEffectQueue` for
 ordered events, or `ConcurrentEffects` for independent work. Each submission
 returns a handle with `value()`, `result`, and `cancel()`. The receiver API

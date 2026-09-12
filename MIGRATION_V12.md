@@ -1,7 +1,8 @@
 # Migrating to VISOR 12
 
-VISOR 12 moves SwiftUI binding ownership from State to the ViewModel. This is a
-major-version change; do not adopt it as a source-compatible 11.x update.
+VISOR 12 moves SwiftUI binding ownership from State to the ViewModel and adds
+action bindings for get-only computed State properties. This is a major-version
+change; do not adopt it as a source-compatible 11.x update.
 
 ## Replace the binding entry point
 
@@ -42,6 +43,36 @@ for genuinely local input.
 Within handlers, keep `updateState(\.field, to: value)`. `@Bound` reconciliation,
 Observation and stored-field mutation histories are unchanged. Never write an
 annotated `bindings.field` inside its own handler—it would dispatch recursively.
+
+## Bind derived values without duplicate State
+
+```swift
+// Inside State:
+private(set) var activeSheet: Sheet?
+var isPickerPresented: Bool { activeSheet == .picker }
+
+// Inside Action:
+@StateBinding(\State.isPickerPresented)
+case pickerPresentationChanged(Bool)
+
+// Inside handle(_:):
+case .pickerPresentationChanged(let presented):
+  guard !presented, state.activeSheet == .picker else { return }
+  updateState(\.activeSheet, to: nil)
+
+// Inside @LazyViewModel content:
+.sheet(isPresented: bindings.isPickerPresented) { PickerContent() }
+```
+
+Computed properties must be synchronous, get-only, accessible, and declared
+directly in State. Only annotated computed properties gain bindings. The handler
+owns the meaning of a proposed write; VISOR generates no inverse setter or cache.
+Reads preserve the authored getter's Observation dependencies.
+
+Computed properties gain no State mutation selectors. Continue asserting
+`\.activeSheet` with `hasExactChanges`; `updateState(\.isPickerPresented, ...)`
+and strict mutation-history expectations for that computed property do not
+compile. Nested value-type members are not made independently observable.
 
 ## Ownership and manual conformers
 

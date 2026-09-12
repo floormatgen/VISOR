@@ -757,7 +757,8 @@ public struct ViewModelMacro: MemberMacro, MemberAttributeMacro, ExtensionMacro 
 
     let bindingMemberNames = ["bindings", "_VISORBindingSelectors", "_visorBindingSelectors", "_visorBindings"] +
       state.memberBlock.members.compactMap { member -> String? in
-        let name = stateFieldSpec(from: member.decl)?.name
+        let name = stateFieldSpec(from: member.decl)?.name ??
+          stateProjectionSpec(from: member.decl)?.name
         return name.map { "_visorBinding_\($0)" }
       }
     if let collision = bindingMemberNames.first(where: { viewModel.hasMemberNamed($0) }) {

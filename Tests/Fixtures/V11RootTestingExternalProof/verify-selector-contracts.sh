@@ -20,6 +20,7 @@ probe_output=$(swift build \
   -Xswiftc -DVISOR_PROBE_FILEPRIVATE_SELECTOR \
   -Xswiftc -DVISOR_PROBE_PRIVATE_SELECTOR \
   -Xswiftc -DVISOR_PROBE_COMPUTED_SELECTOR \
+  -Xswiftc -DVISOR_PROBE_BOUND_PROJECTION_SELECTOR \
   -Xswiftc -DVISOR_PROBE_NESTED_SELECTOR \
   -Xswiftc -DVISOR_PROBE_PROJECTING_OVERLOAD 2>&1)
 status=$?
@@ -63,4 +64,8 @@ verify_diagnostic \
   "a projecting history overload" \
   "extra argument 'hasExactChanges' in call"
 
-echo "Root selectors remain flat and respect generated field visibility."
+verify_diagnostic \
+  "an action-bound computed mutation selector" \
+  "has no member 'hasDetails'"
+
+echo "Root mutation selectors remain flat, stored-only and respect generated field visibility."

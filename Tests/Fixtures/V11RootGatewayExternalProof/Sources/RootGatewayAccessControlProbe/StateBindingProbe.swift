@@ -1,4 +1,5 @@
 import Observation
+import RootGatewayModelsNonisolated
 import VISOR
 
 #if VISOR_PROBE_BINDING_PAYLOAD
@@ -12,6 +13,40 @@ final class MismatchedBindingViewModel {
 
   enum Action {
     @StateBinding(\State.count)
+    case changed(String)
+  }
+
+  func handle(_: Action) { }
+}
+#endif
+
+#if VISOR_PROBE_PROJECTION_UPDATE
+@MainActor
+func probeProjectionUpdate(_ model: NonisolatedBindingViewModel) {
+  model.updateState(\.isDisabled, to: false)
+}
+#endif
+
+#if VISOR_PROBE_PROJECTION_SETTER
+@MainActor
+func probeProjectionSetter(_ model: NonisolatedBindingViewModel) {
+  model.state.isDisabled = false
+}
+#endif
+
+#if VISOR_PROBE_PROJECTION_PAYLOAD
+@MainActor
+@Observable
+@ViewModel
+final class MismatchedProjectionViewModel {
+  final class State {
+    var projected: Bool {
+      true
+    }
+  }
+
+  enum Action {
+    @StateBinding(\State.projected)
     case changed(String)
   }
 
@@ -36,5 +71,15 @@ final class ConditionalBindingViewModel {
   #endif
 
   func handle(_: Action) { }
+}
+#endif
+
+#if VISOR_PROBE_V12_BINDING_NAMESPACE
+@MainActor
+func probeBindingNamespace(_ model: NonisolatedBindingViewModel) {
+  _ = model.bindableState
+  _ = model.bindings.displayOnly
+  _ = model.bindings.hidden
+  _ = model.state[\.isDisabled]
 }
 #endif
