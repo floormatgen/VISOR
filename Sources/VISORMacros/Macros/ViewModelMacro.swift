@@ -756,11 +756,7 @@ public struct ViewModelMacro: MemberMacro, MemberAttributeMacro, ExtensionMacro 
     guard stateBindings.isValid else { return [] }
 
     let bindingMemberNames = ["bindings", "_VISORBindingSelectors", "_visorBindingSelectors", "_visorBindings"] +
-      state.memberBlock.members.compactMap { member -> String? in
-        let name = stateFieldSpec(from: member.decl)?.name ??
-          stateProjectionSpec(from: member.decl)?.name
-        return name.map { "_visorBinding_\($0)" }
-      }
+      stateBindings.bindings.map { "_visorBinding_\($0.fieldName)" }
     if let collision = bindingMemberNames.first(where: { viewModel.hasMemberNamed($0) }) {
       context.diagnose(Diagnostic(
         node: Syntax(viewModel),
@@ -790,7 +786,6 @@ public struct ViewModelMacro: MemberMacro, MemberAttributeMacro, ExtensionMacro 
 
     members.append(contentsOf: viewModelBindingMembers(
       viewModel: viewModel,
-      state: state,
       bindings: stateBindings.bindings,
       accessPrefix: prefix,
     ))

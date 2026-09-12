@@ -41,7 +41,7 @@ import SwiftUI
 /// Text(state.title)
 /// ```
 ///
-/// **Bindings:** Use the generated `bindings` property for SwiftUI controls:
+/// **Bindings:** Use `bindings` for properties selected by `@StateBinding` actions:
 /// ```swift
 /// Toggle("Enabled", isOn: bindings.isEnabled)
 /// TextField("Name", text: bindings.name)

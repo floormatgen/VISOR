@@ -410,9 +410,11 @@ mutations, not action dispatch:
 state[\.query] = "Swift"
 ```
 
-SwiftUI controls use model-owned bindings so annotated fields dispatch actions:
+SwiftUI controls use model-owned bindings for properties selected by
+`@StateBinding` actions:
 
 ```swift
+// Requires @StateBinding(\State.query) on an Action case:
 TextField("Search", text: viewModel.bindings.query)
 ```
 
@@ -422,7 +424,7 @@ Inside a `@LazyViewModel` view, the generated convenience is:
 TextField("Search", text: bindings.query)
 ```
 
-This keeps production Observation invalidation and test-history capture on the same synchronous route. Mutation selectors are generated only for supported top-level stored fields whose getter is at least `fileprivate`; they do not recursively expose nested members. Get-only computed properties explicitly selected by `@StateBinding` also gain binding selectors, but these cannot be used for `updateState` or strict mutation-history expectations.
+This keeps production Observation invalidation and test-history capture on the same synchronous route. Mutation selectors are generated only for supported top-level stored fields whose getter is at least `fileprivate`; they do not recursively expose nested members. Binding selectors require an explicit `@StateBinding` action for both stored and get-only computed properties. Computed bindings cannot be used for `updateState` or strict mutation-history expectations.
 
 With `@StateBinding(\State.field)` on an action case, `viewModel.bindings.field`
 proposes writes to synchronous `handle(_:)`. The handler commits using

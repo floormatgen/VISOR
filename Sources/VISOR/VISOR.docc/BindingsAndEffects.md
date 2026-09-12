@@ -5,7 +5,7 @@ Keep control writes synchronous and choose an explicit lifetime and completion p
 ## Bind controls to actions
 
 Apply `@StateBinding` to a single-payload case in a ViewModel's nested
-`Action` enum. In VISOR 12, controls use the model-owned `bindings` namespace:
+`Action` enum. Controls use the model-owned `bindings` namespace:
 
 ```swift
 @MainActor
@@ -45,9 +45,16 @@ event, including a write equal to the current value. Labelled payloads, such as
 
 Use `updateState` to commit inside the handler. Source projections, `updateState`
 and raw `state[\.field]` writes never dispatch actions; they retain the ordinary
-Observation and test-history instrumentation. A model binding for an unannotated
-stored field commits through `updateState`. Writing an annotated `bindings.field`
-inside its own handler would dispatch the action again and recurse.
+Observation and test-history instrumentation. Writing `bindings.field` inside
+its own handler would dispatch the action again and recurse.
+
+Only properties selected by `@StateBinding` actions gain generated bindings.
+Unannotated stored fields, including source-backed fields, have no binding
+selector. Omitting or removing an annotation therefore causes a compile error
+at the binding use rather than silently changing its write behaviour. Declare
+an action even when its handler only assigns the value; use local SwiftUI
+`@State` for input owned solely by the view. This constrains generated bindings,
+not deliberate calls to `updateState` or raw State mutation APIs.
 
 The key path must be `\State.field`, selecting one supported top-level stored
 field or synchronous get-only computed property with an accessible getter.
@@ -124,8 +131,8 @@ dispatch, or route registration.
 
 The root retains State and holds the model weakly. Retaining a binding cannot
 retain the model. After the model deinitialises, reads still access the retained
-State and all binding writes do nothing, including unannotated stored-field
-writes. Binding creation does not read field values or dispatch initial actions.
+State and all binding writes do nothing. Binding creation does not read field
+values or dispatch initial actions.
 
 Both synthesised and authored initialisers work without connection hooks or
 factory preparation. `@LazyViewModel` exposes `bindings` as a convenience for
@@ -134,9 +141,9 @@ factory preparation. `@LazyViewModel` exposes `bindings` as a convenience for
 
 State contains only values, Observation and mutation recording—not its owner's
 action routes. Even if two models share State, each binding dispatches only to
-its own model. Raw `Bindable(model.state)[\\.field]` writes remain ordinary
-stored-field mutations and **never** invoke an annotated action. Migrate every
-action-owning control to `model.bindings.field` when upgrading from VISOR 11.
+its own model. Raw `Bindable(model.state)[\.field]` writes remain ordinary
+stored-field mutations and **never** invoke an annotated action. Controls that
+dispatch actions must use `model.bindings.field`.
 
 ## Choose an effect owner
 

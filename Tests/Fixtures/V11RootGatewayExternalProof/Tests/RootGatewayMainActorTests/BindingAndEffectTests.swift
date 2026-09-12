@@ -83,15 +83,16 @@ struct BindingAndEffectTests {
   }
 
   @Test
-  func `Typed namespaces support generic forwarding and unannotated stored writes`() {
+  func `Typed namespaces forward action bindings through generic code`() {
+    // Given
     let model = MainActorBindingViewModel()
     let controls: ViewModelBindings<MainActorBindingViewModel> = bindings(for: model)
-    controls.preparedValue.wrappedValue = 23
-    #expect(model.state.preparedValue == 23)
-    #expect(model.handledValues.isEmpty)
 
-    // A retained copy still reaches the same model-owned action path.
+    // When
     controls.isEnabled.wrappedValue = true
+
+    // Then
+    #expect(model.state.isEnabled)
     #expect(model.handledValues == [true])
   }
 

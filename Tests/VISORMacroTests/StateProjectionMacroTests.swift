@@ -77,6 +77,8 @@ struct StateProjectionMacroTests {
     #expect(modelMembers.contains(#"keyPath: \State.projected"#))
     #expect(modelMembers.contains("public let projected = Model._visorBinding_projected"))
     #expect(!modelMembers.contains("_visorBinding_displayOnly"))
+    #expect(!modelMembers.contains("_visorBinding_count"))
+    #expect(!modelMembers.contains("model.updateState("))
     #expect(modelMembers.contains("model.handle(.changed(value))"))
   }
 

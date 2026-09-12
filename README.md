@@ -46,14 +46,10 @@ observable types in the importing source file.
 
 ## Installation
 
-This checkout targets VISOR 12 (unreleased). Use a local checkout while
-evaluating it; after release, add VISOR with Swift Package Manager:
-
-```swift
-dependencies: [
-  .package(url: "https://github.com/avdn-dev/VISOR.git", from: "12.0.0"),
-]
-```
+Add `https://github.com/avdn-dev/VISOR.git` with Swift Package Manager and select
+the release you intend to adopt. Use the documentation at that release's tag;
+this checkout may include unreleased APIs. To evaluate unreleased changes, add
+your VISOR checkout as a local package dependency.
 
 Declare only the products each target imports. A feature that owns a source-backed ViewModel normally needs both observation and architecture:
 
@@ -201,7 +197,7 @@ func valueChanged(_ value: Value) async { ... }
 
 Source-backed `@Polled`, debounce, and throttle declarations are deliberately absent. Durable latest state belongs in a producer-owned source. Elapsed-time work belongs in an explicitly structured task with an injected `Clock`. Lossless events need an event-specific buffered contract rather than a latest-state source.
 
-## Model-owned bindings and effects (12.0)
+## Model-owned bindings and effects
 
 Annotate a single-payload action to keep direct binding syntax while moving
 validation and side effects into the ViewModel:
@@ -223,12 +219,13 @@ func handle(_ action: Action) {
 Toggle("Focus Mode", isOn: bindings.isFocusEnabled)
 ```
 
-Binding writes call the handler synchronously. `updateState` and source
+Only properties selected by `@StateBinding` actions expose generated bindings;
+unannotated fields have no binding selector. Binding writes call the handler
+synchronously. `updateState` and source
 projections commit without dispatching an action again. Existing async handlers
 remain supported for ViewModels without `@StateBinding`. Each model lazily
 retains one stable binding root, including models with authored initialisers.
-Raw State writes never dispatch actions. See [Migrating to VISOR 12](MIGRATION_V12.md)
-for the breaking binding changes.
+Raw State writes never dispatch actions.
 
 The same annotation also supports get-only computed State properties:
 
@@ -263,7 +260,7 @@ search.run(for: self) { [service] in
 
 See [Action bindings and managed effects](Sources/VISOR/VISOR.docc/BindingsAndEffects.md)
 for toggling, queue admission, authored initialisers, lifetime, and complete
-effect testing. Managed effect APIs are unchanged from 11.1.
+effect testing.
 
 ## One-shot coordination
 
@@ -317,7 +314,8 @@ nonisolated protocol AnalyticsService: Sendable {
 The DocC catalogue covers architecture, observation, testing, navigation, and
 deep linking.
 
-Existing v10 consumers should follow [MIGRATION_V11.md](MIGRATION_V11.md). VISOR 11 removes the v10 observation APIs without compatibility shims.
+For upgrades, consult the [observation migration guide](MIGRATION_V11.md) and
+[binding migration guide](MIGRATION_V12.md).
 
 ## Licence
 

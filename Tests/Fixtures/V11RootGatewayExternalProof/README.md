@@ -1,4 +1,4 @@
-# VISOR 11 gateway boundary proof
+# VISOR gateway boundary proof
 
 This downstream Swift 6.2 package verifies that the public
 `VISORObservation` and `VISOR` APIs compile without package, SPI, or testable

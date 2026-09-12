@@ -3,41 +3,28 @@ import SwiftSyntax
 
 /// Generate typed descriptors without spelling or inferring the user's field
 /// types. Swift infers them from State key paths, including initialiser-only
-/// stored declarations. Forwarders never capture an instance or erase actions.
+/// stored declarations. Only validated action bindings produce descriptors;
+/// forwarders never capture an instance or erase actions.
 func viewModelBindingMembers(
   viewModel: ClassDeclSyntax,
-  state: ClassDeclSyntax,
   bindings: [StateBindingSpec],
   accessPrefix: String,
 ) -> [DeclSyntax] {
   let model = viewModel.name.text
-  let fields = state.memberBlock.members.compactMap {
-    stateFieldSpec(from: $0.decl)
-  }.filter { $0.accessPrefix != "private " }
-  let projections = state.memberBlock.members.compactMap {
-    stateProjectionSpec(from: $0.decl)
-  }.filter { projection in bindings.contains { $0.fieldName == projection.name } }
-  let selections = fields.map { ($0.name, $0.accessPrefix) } +
-    projections.map { ($0.name, $0.accessPrefix) }
-  var members: [DeclSyntax] = selections.map { name, _ in
-    let write: String
-    if let binding = bindings.first(where: { $0.fieldName == name }) {
-      let argument = binding.label.map { "\($0): value" } ?? "value"
-      write = "model.handle(.\(binding.caseName)(\(argument)))"
-    } else {
-      write = "model.updateState(\\.\(name), to: value)"
-    }
+  var members: [DeclSyntax] = bindings.map { binding in
+    let name = binding.fieldName
+    let argument = binding.label.map { "\($0): value" } ?? "value"
     return DeclSyntax(stringLiteral: """
       private static let _visorBinding_\(name) = VISOR._ViewModelBinding(
         for: \(model).self,
         keyPath: \\State.\(name)
       ) { model, value in
-        \(write)
+        model.handle(.\(binding.caseName)(\(argument)))
       }
       """)
   }
-  let selectors = selections.map { name, prefix in
-    "\(prefix)let \(name) = \(model)._visorBinding_\(name)"
+  let selectors = bindings.map { binding in
+    "\(binding.accessPrefix)let \(binding.fieldName) = \(model)._visorBinding_\(binding.fieldName)"
   }.joined(separator: "\n")
   members.append(contentsOf: [
     DeclSyntax(stringLiteral: """

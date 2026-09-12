@@ -11,7 +11,7 @@
 - `Tests/<Target>Tests`: root tests.
 - `Tests/Fixtures/V11Root*ExternalProof`: downstream API-boundary tests.
 - `Sources/VISOR/VISOR.docc`: architecture and behavioural documentation.
-- `MIGRATION_V11.md`: VISOR 10 migration contract.
+- `MIGRATION_*.md`: version-specific upgrade contracts.
 
 ## Rules
 
@@ -23,6 +23,8 @@
 - Do not run simulator tests; this repository has no simulator test suite.
 - Use one-line Conventional Commit messages.
 - Update the relevant README, DocC, or migration guide when behaviour changes.
+- Keep non-migration documentation version-neutral. Describe current behaviour;
+  put version-specific changes and upgrade instructions in migration guides.
 
 ## Validate
 

@@ -30,7 +30,7 @@ extension DeclGroupSyntax {
 
 // MARK: - ClassAnalysis
 
-/// The class-level facts needed by the v11 ViewModel macro.
+/// The class-level facts needed by the ViewModel macro.
 struct ClassAnalysis {
 
   // MARK: Lifecycle

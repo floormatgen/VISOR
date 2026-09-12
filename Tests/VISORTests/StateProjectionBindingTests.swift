@@ -28,6 +28,8 @@ private final class ProjectionBindingModel {
     case pickerPresentationChanged(Bool)
     @StateBinding(\State.title)
     case titleChanged(String)
+    @StateBinding(\State.activeSheet)
+    case activeSheetChanged(Sheet?)
   }
 
   var actions = [Action]()
@@ -41,6 +43,9 @@ private final class ProjectionBindingModel {
 
     case .titleChanged(let value):
       updateState(\.title, to: value.uppercased())
+
+    case .activeSheetChanged(let value):
+      updateState(\.activeSheet, to: value)
     }
   }
 }
@@ -127,16 +132,30 @@ private final class CustomProjectionBindingModel {
 @MainActor
 struct StateProjectionBindingTests {
   @Test
-  func `Unannotated optional bindings keep reads but stop writes after model deinitialisation`() throws {
+  func `Optional action bindings keep reads but stop writes after model deinitialisation`() throws {
+    // Given
     var model: ProjectionBindingModel? = ProjectionBindingModel()
     let binding = try #require(model?.bindings.activeSheet)
+
+    // When
     binding.wrappedValue = nil
+
+    // Then
     #expect(model?.state.activeSheet == nil)
-    #expect(model?.actions.isEmpty == true)
+    #expect(model?.actions == [.activeSheetChanged(nil)])
+
+    // When
     binding.wrappedValue = .settings
+
+    // Then
+    #expect(model?.actions == [.activeSheetChanged(nil), .activeSheetChanged(.settings)])
+
+    // When
     weak let owner = model
     model = nil
     binding.wrappedValue = .picker
+
+    // Then
     #expect(owner == nil)
     #expect(binding.wrappedValue == .settings)
   }

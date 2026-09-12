@@ -1,6 +1,7 @@
 /// Routes writes through `viewModel.bindings` into the annotated action synchronously.
 ///
 /// Apply to a single-payload case in a `@ViewModel`'s nested `Action` enum.
+/// Only properties selected by this annotation gain generated model bindings.
 /// The model must implement synchronous `handle(_:)`. The handler owns the
 /// commit through `updateState(_:to:)`; rejecting a proposed value is allowed.
 /// Source projections and `updateState` never dispatch a binding action.

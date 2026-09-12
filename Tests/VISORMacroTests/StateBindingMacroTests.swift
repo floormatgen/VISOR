@@ -229,7 +229,13 @@ struct StateBindingMacroTests {
 
   @Test(arguments: ["bindings", "_VISORBindingSelectors", "_visorBindingSelectors", "_visorBindings", "_visorBinding_count"])
   func `Binding namespace collisions fail with a focused diagnostic`(name: String) throws {
-    let model = try modelWithMembers("let \(name) = 0")
+    let model = try modelWithMembers("""
+      let \(name) = 0
+      enum Action {
+        @StateBinding(\\State.count) case changed(Int)
+      }
+      func handle(_ action: Action) {}
+      """)
     let context = BasicMacroExpansionContext()
     let members = try ViewModelMacro.expansion(
       of: AttributeSyntax(stringLiteral: "@ViewModel"),
@@ -261,6 +267,54 @@ struct StateBindingMacroTests {
     #expect(context.diagnostics.first?.diagMessage.severity == .warning)
   }
 
+  @Test(arguments: [true, false])
+  func `Removing an annotation removes the binding instead of changing its setter`(annotated: Bool) throws {
+    // Given
+    let annotation = annotated ? #"@StateBinding(\State.count) "# : ""
+    let model = try model(action: annotation + "case changed(Int)")
+    let context = BasicMacroExpansionContext()
+
+    // When
+    let members = try ViewModelMacro.expansion(
+      of: AttributeSyntax(stringLiteral: "@ViewModel"),
+      providingMembersOf: model,
+      conformingTo: [],
+      in: context,
+    ).map(\.description).joined(separator: "\n")
+
+    // Then
+    #expect(context.diagnostics.isEmpty)
+    #expect(members.contains("private static let _visorBinding_count") == annotated)
+    #expect(members.contains("let count = Model._visorBinding_count") == annotated)
+    #expect(members.contains("model.handle(.changed(value))") == annotated)
+    #expect(!members.contains("model.updateState("))
+    #expect(!members.contains("_visorBinding_output"))
+    #expect(!members.contains("_visorBinding_computed"))
+  }
+
+  @Test(arguments: ["", "enum Action { case changed(Int) }\nfunc handle(_ action: Action) async {}"])
+  func `Models without binding actions still conform with an empty binding namespace`(members: String) throws {
+    // Given
+    let model = try modelWithMembers(members)
+    let context = BasicMacroExpansionContext()
+
+    // When
+    let generated = try ViewModelMacro.expansion(
+      of: AttributeSyntax(stringLiteral: "@ViewModel"),
+      providingMembersOf: model,
+      conformingTo: [],
+      in: context,
+    ).map(\.description).joined(separator: "\n")
+
+    // Then
+    #expect(context.diagnostics.isEmpty)
+    #expect(generated.contains("struct _VISORBindingSelectors"))
+    #expect(generated.contains("var bindings: VISOR.ViewModelBindings<Model>"))
+    #expect(!generated.contains("private static let _visorBinding_"))
+    #expect(!generated.contains("model.handle("))
+    #expect(!generated.contains("model.updateState("))
+  }
+
   // MARK: Private
 
   private func model(
@@ -283,6 +337,7 @@ struct StateBindingMacroTests {
       final class Model {
         final class State {
           private(set) var count = 0
+          private(set) var output = 0
           private var secret = 0
           let constant = 0
           var computed: Int { count }

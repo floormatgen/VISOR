@@ -6,6 +6,7 @@ import SwiftSyntaxMacros
 
 struct StateBindingSpec {
   let fieldName: String
+  let accessPrefix: String
   let caseName: String
   let label: String?
 }
@@ -60,12 +61,14 @@ struct StateBindingAnalysis {
     }.first { $0.name.text == "Action" }
     guard let action else { return }
 
-    let fields = Set(state.memberBlock.members.compactMap {
+    let fields = state.memberBlock.members.compactMap {
       stateFieldSpec(from: $0.decl)
-    }.filter { $0.accessPrefix != "private " }.map(\.name))
-    let projections = Set(state.memberBlock.members.compactMap {
+    }.filter { $0.accessPrefix != "private " }
+    let projections = state.memberBlock.members.compactMap {
       stateProjectionSpec(from: $0.decl)
-    }.map(\.name))
+    }
+    let selections = fields.map { (name: $0.name, accessPrefix: $0.accessPrefix) } +
+      projections.map { (name: $0.name, accessPrefix: $0.accessPrefix) }
 
     for member in action.memberBlock.members {
       if let conditional = member.decl.as(IfConfigDeclSyntax.self) {
@@ -96,7 +99,7 @@ struct StateBindingAnalysis {
       }
       guard
         let name = stateBindingField(attribute),
-        fields.contains(name) || projections.contains(name)
+        let selection = selections.first(where: { $0.name == name })
       else {
         diagnostics.append((Syntax(attribute), .selection))
         continue
@@ -108,6 +111,7 @@ struct StateBindingAnalysis {
       let label = parameter.firstName?.text
       bindings.append(StateBindingSpec(
         fieldName: name,
+        accessPrefix: selection.accessPrefix,
         caseName: element.name.trimmedDescription,
         label: label == "_" ? nil : label,
       ))

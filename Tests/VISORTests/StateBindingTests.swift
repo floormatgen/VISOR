@@ -189,13 +189,13 @@ struct StateBindingTests {
   }
 
   @Test
-  func `Commits and unannotated selectors do not redispatch actions`() {
+  func `Explicit commits and raw unannotated selectors do not dispatch actions`() {
     // Given
     let model = BindingActionModel()
 
     // When
     model.updateState(\.name, to: "direct")
-    model.bindings.unbound.wrappedValue = 2
+    model.state[\.unbound] = 2
 
     // Then
     #expect(model.state.name == "direct")

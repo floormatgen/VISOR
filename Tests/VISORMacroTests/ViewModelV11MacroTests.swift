@@ -54,16 +54,9 @@ struct ViewModelV11MacroTests {
               self.state = State()
             }
 
-            private static let _visorBinding_count = VISOR._ViewModelBinding(
-              for: EmptyViewModel.self,
-              keyPath: \\State.count
-            ) { model, value in
-              model.updateState(\\.count, to: value)
-            }
-
             @MainActor
             struct _VISORBindingSelectors {
-              let count = EmptyViewModel._visorBinding_count
+
               init() {
               }
             }
@@ -158,32 +151,9 @@ struct ViewModelV11MacroTests {
                 status: _visorInitialSource1)
             }
 
-            private static let _visorBinding_count = VISOR._ViewModelBinding(
-              for: SourceInitialisedViewModel.self,
-              keyPath: \\State.count
-            ) { model, value in
-              model.updateState(\\.count, to: value)
-            }
-
-            private static let _visorBinding_label = VISOR._ViewModelBinding(
-              for: SourceInitialisedViewModel.self,
-              keyPath: \\State.label
-            ) { model, value in
-              model.updateState(\\.label, to: value)
-            }
-
-            private static let _visorBinding_status = VISOR._ViewModelBinding(
-              for: SourceInitialisedViewModel.self,
-              keyPath: \\State.status
-            ) { model, value in
-              model.updateState(\\.status, to: value)
-            }
-
             @MainActor
             public struct _VISORBindingSelectors {
-              public let count = SourceInitialisedViewModel._visorBinding_count
-              public let label = SourceInitialisedViewModel._visorBinding_label
-              public let status = SourceInitialisedViewModel._visorBinding_status
+
               public init() {
               }
             }
@@ -297,16 +267,9 @@ struct ViewModelV11MacroTests {
 
             let _visorObservationOwnership = VISOR._ViewModelObservationOwnership()
 
-            private static let _visorBinding_count = VISOR._ViewModelBinding(
-              for: CustomViewModel.self,
-              keyPath: \\State.count
-            ) { model, value in
-              model.updateState(\\.count, to: value)
-            }
-
             @MainActor
             struct _VISORBindingSelectors {
-              let count = CustomViewModel._visorBinding_count
+
               init() {
               }
             }
@@ -560,16 +523,9 @@ struct ViewModelV11MacroTests {
 
             let _visorObservationOwnership = VISOR._ViewModelObservationOwnership()
 
-            private static let _visorBinding_count = VISOR._ViewModelBinding(
-              for: EmptyViewModel.self,
-              keyPath: \\State.count
-            ) { model, value in
-              model.updateState(\\.count, to: value)
-            }
-
             @MainActor
             struct _VISORBindingSelectors {
-              let count = EmptyViewModel._visorBinding_count
+
               init() {
               }
             }
@@ -656,32 +612,9 @@ struct ViewModelV11MacroTests {
               self.status = status
             }
 
-            private static let _visorBinding_count = VISOR._ViewModelBinding(
-              for: SourceViewModel.self,
-              keyPath: \\State.count
-            ) { model, value in
-              model.updateState(\\.count, to: value)
-            }
-
-            private static let _visorBinding_label = VISOR._ViewModelBinding(
-              for: SourceViewModel.self,
-              keyPath: \\State.label
-            ) { model, value in
-              model.updateState(\\.label, to: value)
-            }
-
-            private static let _visorBinding_status = VISOR._ViewModelBinding(
-              for: SourceViewModel.self,
-              keyPath: \\State.status
-            ) { model, value in
-              model.updateState(\\.status, to: value)
-            }
-
             @MainActor
             struct _VISORBindingSelectors {
-              let count = SourceViewModel._visorBinding_count
-              let label = SourceViewModel._visorBinding_label
-              let status = SourceViewModel._visorBinding_status
+
               init() {
               }
             }

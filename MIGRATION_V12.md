@@ -35,10 +35,16 @@ This is also a behavioural break: `state[\.field] = value` and
 fields, but now **always commit directly**, even when the field has a
 `@StateBinding` action. They never dispatch an action or require connection.
 
-Migrate every control that relies on validation, normalisation, persistence or
-other action behaviour to `model.bindings.field`. A binding for an unannotated
-stored field commits through `updateState`; no action annotation is required
-for genuinely local input.
+Migrate model-owned controls to `model.bindings.field`. Only properties selected
+by `@StateBinding` actions expose bindings; there is no direct-assignment fallback
+for unannotated stored fields, including source-backed fields. Add an annotated
+action and synchronous handler for each model-owned editable field, even when
+the handler only calls `updateState`. Keep genuinely view-owned input in local
+SwiftUI `@State`.
+
+Removing an annotation now removes the generated binding and produces a compile
+error at its use. Raw State mutation APIs remain available; the action-only
+contract applies to the generated model binding namespace.
 
 Within handlers, keep `updateState(\.field, to: value)`. `@Bound` reconciliation,
 Observation and stored-field mutation histories are unchanged. Never write an

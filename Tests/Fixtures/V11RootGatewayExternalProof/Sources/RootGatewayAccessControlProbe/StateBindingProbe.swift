@@ -80,6 +80,13 @@ func probeBindingNamespace(_ model: NonisolatedBindingViewModel) {
   _ = model.bindableState
   _ = model.bindings.displayOnly
   _ = model.bindings.hidden
+  _ = model.bindings.preparedValue
   _ = model.state[\.isDisabled]
+}
+
+@MainActor
+func probeUnannotatedSourceBindings(_ model: NonisolatedSourceBackedViewModel) {
+  _ = model.bindings.projectedRevision
+  _ = model.bindings.reactedRevision
 }
 #endif

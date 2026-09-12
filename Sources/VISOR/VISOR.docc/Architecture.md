@@ -213,14 +213,18 @@ Stored mutations and model-owned control bindings use separate entry points:
 ```swift
 state[\.query] = "Swift"
 
+// Requires @StateBinding(\State.query) on an Action case:
 TextField("Search", text: viewModel.bindings.query)
 ```
 
-Bindings for unannotated stored fields commit directly and are appropriate for
-genuinely local control input. Use `@StateBinding(\State.field)` on an action
-case when a control requires validation, persistence, analytics, or coupled
-mutations. `viewModel.bindings.field` then synchronously proposes a value to
-`handle(_:)`; the handler uses `updateState` to commit without redispatching.
+Only properties selected by `@StateBinding(\State.field)` actions gain model
+bindings. Every `viewModel.bindings.field` write synchronously proposes a value
+to `handle(_:)`; the handler uses `updateState` to commit without redispatching.
+Omitting or removing the annotation makes the binding unavailable rather than
+silently bypassing the handler. Model-owned input requires an explicit action,
+even when the handler only assigns a value. Genuinely view-owned input belongs
+in local SwiftUI `@State`.
+
 The ViewModel retains a stable binding root. Raw State writes never dispatch
 actions, and neither State nor factories need connection hooks. See
 <doc:BindingsAndEffects> for the action-routing and effect-lifetime contracts.

@@ -145,7 +145,7 @@ echo "Root gateway metadata and observation lifecycle controls remain package-in
 
 run_rejected_batch \
   RootGatewayAccessControlProbe \
-  "computed binding contracts" \
+  "action-only and computed binding contracts" \
   -Xswiftc -DVISOR_PROBE_PROJECTION_UPDATE \
   -Xswiftc -DVISOR_PROBE_PROJECTION_SETTER \
   -Xswiftc -DVISOR_PROBE_PROJECTION_PAYLOAD \
@@ -161,7 +161,7 @@ case "$probe_output" in
   *) report_missing_diagnostic "computed binding updateState" ;;
 esac
 
-for missing_member in bindableState displayOnly hidden
+for missing_member in bindableState displayOnly hidden preparedValue projectedRevision reactedRevision
 do
   case "$probe_output" in
     *"has no member '$missing_member'"*|*"has no dynamic member '$missing_member'"*) ;;
@@ -169,4 +169,4 @@ do
   esac
 done
 
-echo "Computed bindings preserve get-only properties and stored-field mutation boundaries."
+echo "Only annotated properties expose bindings; computed properties retain their stored-field mutation boundaries."
