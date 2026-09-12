@@ -72,9 +72,16 @@ public struct LazyViewModelMacro: MemberMacro {
       members.append("var state: \(raw: viewModelType).State { viewModel.state }")
     }
 
-    members.append(
-      "var bindableState: Bindable<\(raw: viewModelType).State> { viewModel.bindableState }"
-    )
+    if structDecl.hasMemberNamed("bindings") {
+      context.diagnose(Diagnostic(
+        node: node,
+        message: BindingNamespaceDiagnostic(macroName: "LazyViewModel", name: "bindings"),
+      ))
+    } else {
+      members.append(
+        "var bindings: VISOR.ViewModelBindings<\(raw: viewModelType)> { viewModel.bindings }"
+      )
+    }
 
     let ownedContent: ExprSyntax =
       if let pending = arguments.pending, let failure = arguments.failure {

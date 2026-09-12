@@ -119,10 +119,10 @@ struct StateBindingTests {
     try await observe(model) { test in
       // When
       try await test.perform {
-        model.bindableState[\.isEnabled].wrappedValue = true
+        model.bindings.isEnabled.wrappedValue = true
         try await gate.waitUntilStarted()
-        model.bindableState[\.isEnabled].wrappedValue = false
-        model.bindableState[\.isEnabled].wrappedValue = true
+        model.bindings.isEnabled.wrappedValue = false
+        model.bindings.isEnabled.wrappedValue = true
         #expect(saved.isEmpty)
         gate.resolve(invocation, with: .success(()))
         await model.finishWrites()
@@ -140,7 +140,7 @@ struct StateBindingTests {
     // Given
     let model = BindingActionModel()
     let original = model.state
-    let binding = model.bindableState[\.isEnabled]
+    let binding = model.bindings.isEnabled
 
     // When
     binding.wrappedValue = true
@@ -157,7 +157,7 @@ struct StateBindingTests {
   func `Handler can reject and normalise proposed values`() {
     // Given
     let model = BindingActionModel()
-    let binding = model.bindableState[\.name]
+    let binding = model.bindings.name
 
     // When
     binding.wrappedValue = ""
@@ -174,7 +174,7 @@ struct StateBindingTests {
   }
 
   @Test
-  func `Direct actions and annotated selector writes share the handler`() {
+  func `Raw State writes are ordinary mutations and never dispatch actions`() {
     // Given
     let model = BindingActionModel()
 
@@ -184,8 +184,8 @@ struct StateBindingTests {
     Bindable(model.state)[\.name].wrappedValue = "colour"
 
     // Then
-    #expect(model.state.name == "COLOUR")
-    #expect(model.actions == Array(repeating: .nameChanged(value: "colour"), count: 3))
+    #expect(model.state.name == "colour")
+    #expect(model.actions == [.nameChanged(value: "colour")])
   }
 
   @Test
@@ -195,7 +195,7 @@ struct StateBindingTests {
 
     // When
     model.updateState(\.name, to: "direct")
-    model.bindableState[\.unbound].wrappedValue = 2
+    model.bindings.unbound.wrappedValue = 2
 
     // Then
     #expect(model.state.name == "direct")
@@ -204,13 +204,13 @@ struct StateBindingTests {
   }
 
   @Test
-  func `Authored initialisers connect through the canonical binding surface`() {
+  func `Authored initialisers expose model-owned bindings`() {
     // Given
     let model = CustomInitialisedBindingModel(initialValue: 5)
 
     // When
-    model.bindableState[\.value].wrappedValue = 6
-    model.bindableState[\.value].wrappedValue = 7
+    model.bindings.value.wrappedValue = 6
+    model.bindings.value.wrappedValue = 7
 
     // Then
     #expect(model.state.value == 7)
@@ -218,7 +218,7 @@ struct StateBindingTests {
   }
 
   @Test
-  func `Factories connect authored initialisers before exposing raw State`() {
+  func `Factories expose bindings without connecting State`() {
     // Given
     let factory = CustomInitialisedBindingModel.Factory {
       CustomInitialisedBindingModel(initialValue: 3)
@@ -226,7 +226,7 @@ struct StateBindingTests {
 
     // When
     let model = factory.makeViewModel()
-    Bindable(model.state)[\.value].wrappedValue = 4
+    model.bindings.value.wrappedValue = 4
 
     // Then
     #expect(model.state.value == 4)
@@ -238,7 +238,7 @@ struct StateBindingTests {
     // Given
     var model: BindingActionModel? = BindingActionModel()
     weak let reference = model
-    let binding = model?.bindableState[\.isEnabled]
+    let binding = model?.bindings.isEnabled
 
     // When
     model = nil
@@ -264,7 +264,7 @@ struct StateBindingTests {
       #expect(model.handledCount == 0)
 
       // When
-      await test.perform { model.bindableState[\.value].wrappedValue = 7 }
+      await test.perform { model.bindings.value.wrappedValue = 7 }
 
       // Then
       test.expect(\.value, hasExactChanges: [7])

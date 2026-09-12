@@ -160,6 +160,12 @@ final class SwappableTestingViewModel: ViewModel {
     private(set) var sourceValue = -1
   }
 
+  struct _VISORBindingSelectors { }
+
+  static let _visorBindingSelectors = _VISORBindingSelectors()
+
+  @ObservationIgnored lazy var bindings = ViewModelBindings(self)
+
   var state = State()
   let _visorObservationOwnership = _ViewModelObservationOwnership()
   let service: TestingService

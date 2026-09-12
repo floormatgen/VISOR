@@ -25,26 +25,3 @@ public struct StateBindingMacro: PeerMacro {
     return []
   }
 }
-
-// MARK: - ViewModelStateBindingsMacro
-
-/// Adds route storage only to State types that declare action bindings.
-public struct ViewModelStateBindingsMacro: MemberMacro {
-  public static func expansion(
-    of attribute: AttributeSyntax,
-    providingMembersOf declaration: some DeclGroupSyntax,
-    conformingTo _: [TypeSyntax],
-    in _: some MacroExpansionContext,
-  ) throws -> [DeclSyntax] {
-    guard
-      let state = declaration.as(ClassDeclSyntax.self),
-      case .argumentList(let arguments) = attribute.arguments
-    else { return [] }
-    let fields = arguments.map { $0.expression.trimmedDescription }.joined(separator: ", ")
-    let prefix = state.modifiers.stateFieldAccessPrefix
-    return ["""
-      \(raw: prefix)let _visorStateBindingRoutes: VISOR._StateBindingRoutes<\(raw: state.name.text)>? =
-        VISOR._StateBindingRoutes(fields: [\(raw: fields)])
-      """]
-  }
-}

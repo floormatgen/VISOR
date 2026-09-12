@@ -50,8 +50,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             public var body: some View {
@@ -109,8 +109,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             var body: some View {
@@ -174,8 +174,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             var body: some View {
@@ -241,8 +241,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             public var body: some View {
@@ -300,8 +300,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             var body: some View {
@@ -359,8 +359,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             var body: some View {
@@ -418,8 +418,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             var body: some View {
@@ -480,8 +480,8 @@ struct LazyViewModelMacroTests {
                   viewModel.state
               }
 
-              var bindableState: Bindable<MyVM.State> {
-                  viewModel.bindableState
+              var bindings: VISOR.ViewModelBindings<MyVM> {
+                  viewModel.bindings
               }
 
               var body: some View {
@@ -672,8 +672,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             var body: some View {
@@ -731,8 +731,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             var body: some View {
@@ -790,8 +790,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             var body: some View {
@@ -849,8 +849,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             public var body: some View {
@@ -906,8 +906,8 @@ struct LazyViewModelMacroTests {
                 return vm
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             var body: some View {
@@ -971,8 +971,8 @@ struct LazyViewModelMacroTests {
                 return vm
             }
 
-            var bindableState: Bindable<MyVM.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<MyVM> {
+                viewModel.bindings
             }
 
             var body: some View {
@@ -1040,8 +1040,8 @@ struct LazyViewModelMacroTests {
                 viewModel.state
             }
 
-            var bindableState: Bindable<Feature.GenericViewModel<LiveService>.State> {
-                viewModel.bindableState
+            var bindings: VISOR.ViewModelBindings<Feature.GenericViewModel<LiveService>> {
+                viewModel.bindings
             }
 
             var body: some View {

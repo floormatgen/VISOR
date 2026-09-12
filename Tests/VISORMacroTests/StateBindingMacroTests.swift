@@ -176,7 +176,7 @@ struct StateBindingMacroTests {
   }
 
   @Test
-  func `Labelled payloads and explicit Void return types synthesise weak synchronous routing`() throws {
+  func `Labelled payloads and explicit Void return types synthesise typed synchronous forwarding`() throws {
     // Given
     let model = try model(
       action: #"@StateBinding(\State.count) case changed(value: Int)"#,
@@ -197,9 +197,9 @@ struct StateBindingMacroTests {
     #expect(analysis.isValid)
     #expect(analysis.bindings.first?.label == "value")
     #expect(context.diagnostics.isEmpty)
-    #expect(members.contains("self._visorConnectStateBindings()"))
-    #expect(members.contains("[weak self]"))
-    #expect(members.contains("self?.handle(.changed(value: value))"))
+    #expect(!members.contains("_visorConnectStateBindings"))
+    #expect(!members.contains("[weak self]"))
+    #expect(members.contains("model.handle(.changed(value: value))"))
     #expect(!members.contains("Task {"))
   }
 
@@ -226,6 +226,40 @@ struct StateBindingMacroTests {
       ],
       macros: ["StateBinding": StateBindingMacro.self],
     )
+  }
+
+  @Test(arguments: ["bindings", "_VISORBindingSelectors", "_visorBindingSelectors", "_visorBindings", "_visorBinding_count"])
+  func `Binding namespace collisions fail with a focused diagnostic`(name: String) throws {
+    let model = try modelWithMembers("let \(name) = 0")
+    let context = BasicMacroExpansionContext()
+    let members = try ViewModelMacro.expansion(
+      of: AttributeSyntax(stringLiteral: "@ViewModel"),
+      providingMembersOf: model,
+      conformingTo: [],
+      in: context,
+    )
+    #expect(members.isEmpty)
+    #expect(context.diagnostics.count == 1)
+    #expect(context.diagnostics.first?.message.contains("could not generate '\(name)'") == true)
+  }
+
+  @Test
+  func `A view-owned bindings member is preserved with an alias warning`() throws {
+    let view = try #require(DeclSyntax(stringLiteral: """
+      struct Screen: View {
+        let bindings = 0
+        var content: some View { EmptyView() }
+      }
+      """).as(StructDeclSyntax.self))
+    let context = BasicMacroExpansionContext()
+    let members = try LazyViewModelMacro.expansion(
+      of: AttributeSyntax(stringLiteral: "@LazyViewModel(Model.self)"),
+      providingMembersOf: view,
+      conformingTo: [],
+      in: context,
+    ).map(\.description).joined(separator: "\n")
+    #expect(!members.contains("var bindings:"))
+    #expect(context.diagnostics.first?.diagMessage.severity == .warning)
   }
 
   // MARK: Private

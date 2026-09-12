@@ -403,29 +403,33 @@ A reaction takes exactly one parameter matching the complete or selected value. 
 updateState(\.status, to: .loading)
 ```
 
-Direct State and SwiftUI writes use the generated selector subscript:
+Direct State writes use the generated selector subscript. These are ordinary
+mutations, not action dispatch:
 
 ```swift
 state[\.query] = "Swift"
-
-@Bindable var state = viewModel.state
-TextField("Search", text: $state[\.query])
 ```
 
-Inside a `@LazyViewModel` view, the generated convenience has the same shape:
+SwiftUI controls use model-owned bindings so annotated fields dispatch actions:
 
 ```swift
-TextField("Search", text: bindableState[\.query])
+TextField("Search", text: viewModel.bindings.query)
 ```
 
-This keeps production Observation invalidation and test-history capture on the same synchronous route. Selectors are generated only for supported top-level stored fields whose getter is at least `fileprivate`; they do not recursively expose nested members.
+Inside a `@LazyViewModel` view, the generated convenience is:
 
-With `@StateBinding(\State.field)` on an action case, that field's selector
-proposes the write to synchronous `handle(_:)`. The handler commits using
-`updateState`. Source projections and `updateState` never dispatch binding
-actions. Use `viewModel.bindableState` for manually constructed models so
-authored initialisers receive their action routes before binding. See
-<doc:BindingsAndEffects> for full construction and completion semantics.
+```swift
+TextField("Search", text: bindings.query)
+```
+
+This keeps production Observation invalidation and test-history capture on the same synchronous route. Mutation selectors are generated only for supported top-level stored fields whose getter is at least `fileprivate`; they do not recursively expose nested members.
+
+With `@StateBinding(\State.field)` on an action case, `viewModel.bindings.field`
+proposes writes to synchronous `handle(_:)`. The handler commits using
+`updateState`. Source projections, `updateState` and raw State writes never
+dispatch binding actions. The model lazily retains one stable binding root;
+authored initialisers require no special preparation. See
+<doc:BindingsAndEffects> for full ownership and completion semantics.
 
 ## Structured SwiftUI ownership
 

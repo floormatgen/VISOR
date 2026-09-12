@@ -11,8 +11,8 @@
 /// The macro adds VISOR-owned Observation accessors to a plain nested
 /// `final class State`, groups `@Bound(source:)` and `@Reaction(source:)`
 /// entries into declarative recipes, and requires a stable stored `let state`.
-/// It also generates `ViewModel` conformance and
-/// `typealias Factory = ViewModelFactory<ClassName>`.
+/// It also generates `ViewModel` conformance, a stable model-owned `bindings`
+/// namespace, and `typealias Factory = ViewModelFactory<ClassName>`.
 ///
 /// ## Source-backed State + Action pattern
 ///
@@ -64,6 +64,7 @@
   member,
   names:
   named(Factory),
+  named(bindings),
   named(_visorObservationOwnership),
   named(_visorBuildObservationRecipe),
   arbitrary

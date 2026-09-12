@@ -51,6 +51,6 @@ public struct MainActorBindingView: View {
   public init() { }
 
   public var content: some View {
-    Toggle("Enabled", isOn: bindableState[\.isEnabled])
+    Toggle("Enabled", isOn: bindings.isEnabled)
   }
 }

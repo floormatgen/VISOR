@@ -14,12 +14,12 @@ struct BindingAndEffectTests {
     // Given
     let model = NonisolatedBindingViewModel()
     let state = model.state
-    let binding = model.bindableState[\.isEnabled]
+    let binding = model.bindings.isEnabled
 
     // When
     binding.wrappedValue = true
     binding.wrappedValue = false
-    Bindable(state)[\.isEnabled].wrappedValue = true
+    model.bindings.isEnabled.wrappedValue = true
 
     // Then
     #expect(model.state === state)
@@ -68,7 +68,24 @@ struct BindingAndEffectTests {
     requireView(view.body)
   }
 
+  @Test
+  func `Typed namespaces support generic forwarding and unannotated stored writes`() {
+    let model = NonisolatedBindingViewModel()
+    let controls: ViewModelBindings<NonisolatedBindingViewModel> = bindings(for: model)
+    controls.preparedValue.wrappedValue = 23
+    #expect(model.state.preparedValue == 23)
+    #expect(model.handledValues.isEmpty)
+
+    // A retained copy still reaches the same model-owned action path.
+    controls.isEnabled.wrappedValue = true
+    #expect(model.handledValues == [true])
+  }
+
   // MARK: Private
+
+  private func bindings<Model: ViewModel>(for model: Model) -> Model.Bindings {
+    model.bindings
+  }
 
   private func requireView(_: some View) { }
 }

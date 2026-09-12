@@ -4,9 +4,8 @@ Keep control writes synchronous and choose an explicit lifetime and completion p
 
 ## Bind controls to actions
 
-VISOR 11.1 adds `@StateBinding` to a single-payload case in a ViewModel's nested
-`Action` enum. The control still uses a selector binding over the same stored
-State instance:
+Apply `@StateBinding` to a single-payload case in a ViewModel's nested
+`Action` enum. In VISOR 12, controls use the model-owned `bindings` namespace:
 
 ```swift
 @MainActor
@@ -33,7 +32,7 @@ final class SettingsViewModel {
 @LazyViewModel(SettingsViewModel.self)
 struct SettingsView: View {
   var content: some View {
-    Toggle("Focus Mode", isOn: bindableState[\.isFocusEnabled])
+    Toggle("Focus Mode", isOn: bindings.isFocusEnabled)
   }
 }
 ```
@@ -44,11 +43,11 @@ implicit mutation, deduplication, or initial action dispatch. Every write is an
 event, including a write equal to the current value. Labelled payloads, such as
 `case focusChanged(enabled: Bool)`, are also supported.
 
-Use `updateState` to commit inside the handler. An annotated `state[\.field]`
-write dispatches the action again and would recurse. Source projections and
-`updateState` bypass action routing but retain the ordinary Observation and
-test-history instrumentation. Unannotated selectors retain their direct-write
-behaviour.
+Use `updateState` to commit inside the handler. Source projections, `updateState`
+and raw `state[\.field]` writes never dispatch actions; they retain the ordinary
+Observation and test-history instrumentation. A model binding for an unannotated
+stored field commits through `updateState`. Writing an annotated `bindings.field`
+inside its own handler would dispatch the action again and recurse.
 
 The key path must be `\State.field`, selecting one supported top-level stored
 field with an accessible getter. Only one action may bind each field. Payload
@@ -65,21 +64,28 @@ effect owner; no separate reducer or dispatch API is required.
 
 ### Identity and construction
 
-Bindings project through generated key paths over the stable `let state`.
-`viewModel.bindableState` creates a lightweight `Bindable` wrapper, not an
-ad-hoc `Binding(get:set:)`. The per-State action routes are connected once and
-retain their ViewModel weakly. Retaining a binding cannot retain the ViewModel;
-writes after its owner has deinitialised do nothing.
+Each model lazily retains one ``ViewModelBindings`` value backed by a stable
+reference root. Repeated access and copies share that root. SwiftUI bindings
+project through generated key paths, not per-access `Binding(get:set:)`
+closures. Typed static descriptors infer field types from State getters and
+forward writes directly to the model; there is no action dictionary, type-erased
+dispatch, or route registration.
 
-Synthesised initialisers connect the routes after initialisation. Authored
-initialisers are not rewritten: use `viewModel.bindableState` or construct the
-model through `ViewModelFactory`, including the normal `@LazyViewModel` path.
-Those surfaces connect the routes before returning a binding or model.
-Creating `Bindable(model.state)` yourself before either connection, or writing
-an annotated selector on a standalone State, fails a descriptive precondition.
-Use `viewModel.bindableState` as the normal binding entry point. Raw State reads
-and `updateState` do not need a connection. A State cannot be shared by multiple
-action-owning ViewModels.
+The root retains State and holds the model weakly. Retaining a binding cannot
+retain the model. After the model deinitialises, reads still access the retained
+State and all binding writes do nothing, including unannotated stored-field
+writes. Binding creation does not read field values or dispatch initial actions.
+
+Both synthesised and authored initialisers work without connection hooks or
+factory preparation. `@LazyViewModel` exposes `bindings` as a convenience for
+`viewModel.bindings`. Use this retained namespace rather than constructing
+`ViewModelBindings(model)` in a view body.
+
+State contains only values, Observation and mutation recording—not its owner's
+action routes. Even if two models share State, each binding dispatches only to
+its own model. Raw `Bindable(model.state)[\\.field]` writes remain ordinary
+stored-field mutations and **never** invoke an annotated action. Migrate every
+action-owning control to `model.bindings.field` when upgrading from VISOR 11.
 
 ## Choose an effect owner
 

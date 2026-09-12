@@ -14,18 +14,30 @@ import Observation
 /// Conforming types are explicitly MainActor-isolated `@Observable` classes
 /// with a stable routed `State` instance and an optional `Action` enum for
 /// user-initiated mutations. `@ViewModel` generates the State gateway,
-/// observation recipe and ownership token.
+/// observation recipe, ownership token and stable `bindings` namespace.
 ///
 /// - ViewModels use a plain nested `final class State` retained by a stored
 ///   `let state` property.
 /// - Actions are dispatched via `handle(_:)`. Implement sync or async as needed.
-/// - State changes are routed through generated selectors.
+/// - State changes use generated mutation selectors; UI action proposals use `bindings`.
 @MainActor
 public protocol ViewModel: Observable, AnyObject {
   /// The complete observable representation of all view state.
   associatedtype State: Observable & _ViewModelState
   /// The enum of user-initiated mutations. Defaults to `Never` for read-only ViewModels.
   associatedtype Action = Never
+
+  /// Generated typed binding selectors. Public only for macro expansions.
+  associatedtype _VISORBindingSelectors
+  /// The generated binding namespace, inferred from the retained property.
+  /// An associated type preserves conformance for subclassable models too.
+  associatedtype Bindings = ViewModelBindings<Self>
+
+  /// The generated binding selector namespace.
+  static var _visorBindingSelectors: _VISORBindingSelectors { get }
+
+  /// SwiftUI bindings sharing a stable, model-owned reference root.
+  var bindings: Bindings { get }
 
   /// The current stable view state. Conforming models retain this as a stored
   /// `let state` property.
@@ -37,8 +49,6 @@ public protocol ViewModel: Observable, AnyObject {
   /// Describes cooperative observation sources to VISOR's package-owned
   /// runtime. `@ViewModel` generates this hook.
   func _visorBuildObservationRecipe(into visitor: _ObservationRecipeVisitor)
-  /// Connects generated synchronous action routes. Public only for macros.
-  func _visorConnectStateBindings()
   /// Dispatch an action. Implement sync or async as needed; the protocol requires `async`.
   func handle(_ action: Action) async
 }
@@ -46,8 +56,6 @@ public protocol ViewModel: Observable, AnyObject {
 extension ViewModel {
 
   // MARK: Public
-
-  public func _visorConnectStateBindings() { }
 
   public func _visorBuildObservationRecipe(
     into _: _ObservationRecipeVisitor

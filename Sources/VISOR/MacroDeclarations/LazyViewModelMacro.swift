@@ -41,10 +41,10 @@ import SwiftUI
 /// Text(state.title)
 /// ```
 ///
-/// **Bindings:** Use the generated `bindableState` property for SwiftUI controls:
+/// **Bindings:** Use the generated `bindings` property for SwiftUI controls:
 /// ```swift
-/// Toggle("Enabled", isOn: bindableState[\.isEnabled])
-/// TextField("Name", text: bindableState[\.name])
+/// Toggle("Enabled", isOn: bindings.isEnabled)
+/// TextField("Name", text: bindings.name)
 /// ```
 ///
 /// The default owner UI remains visually transparent while observation becomes
@@ -68,7 +68,7 @@ import SwiftUI
   named(_viewModel),
   named(viewModel),
   named(state),
-  named(bindableState),
+  named(bindings),
   named(factory),
   named(hostRouter),
   named(scenePhase)
@@ -100,7 +100,7 @@ public macro LazyViewModel<VM: ViewModel>(
   named(_viewModel),
   named(viewModel),
   named(state),
-  named(bindableState),
+  named(bindings),
   named(factory),
   named(hostRouter),
   named(scenePhase)

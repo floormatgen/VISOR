@@ -208,21 +208,21 @@ Every supported top-level stored State field is instrumented for normal Observat
 updateState(\.phase, to: .loading)
 ```
 
-Explicit State and SwiftUI binding writes use the same route:
+Stored mutations and model-owned control bindings use separate entry points:
 
 ```swift
 state[\.query] = "Swift"
 
-@Bindable var state = viewModel.state
-TextField("Search", text: $state[\.query])
+TextField("Search", text: viewModel.bindings.query)
 ```
 
-Unannotated selectors commit directly and are appropriate for genuinely local
-control input. Use `@StateBinding(\State.field)` on an action case when a control
-requires validation, persistence, analytics, or coupled mutations. The same
-selector then synchronously proposes a value to `handle(_:)`; the handler uses
-`updateState` to commit without redispatching. Use `viewModel.bindableState` as
-the binding entry point, particularly with authored initialisers. See
+Bindings for unannotated stored fields commit directly and are appropriate for
+genuinely local control input. Use `@StateBinding(\State.field)` on an action
+case when a control requires validation, persistence, analytics, or coupled
+mutations. `viewModel.bindings.field` then synchronously proposes a value to
+`handle(_:)`; the handler uses `updateState` to commit without redispatching.
+The ViewModel retains a stable binding root. Raw State writes never dispatch
+actions, and neither State nor factories need connection hooks. See
 <doc:BindingsAndEffects> for the action-routing and effect-lifetime contracts.
 
 Selectors are flat. `\.settings` can route replacement or value write-back of the top-level field; VISOR does not generate `\.settings.theme` history. A nested mutable reference should own its own Observation boundary or be represented by a stable domain snapshot.

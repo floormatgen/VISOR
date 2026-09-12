@@ -54,6 +54,29 @@ struct ViewModelV11MacroTests {
               self.state = State()
             }
 
+            private static let _visorBinding_count = VISOR._ViewModelBinding(
+              for: EmptyViewModel.self,
+              keyPath: \\State.count
+            ) { model, value in
+              model.updateState(\\.count, to: value)
+            }
+
+            @MainActor
+            struct _VISORBindingSelectors {
+              let count = EmptyViewModel._visorBinding_count
+              init() {
+              }
+            }
+
+            static let _visorBindingSelectors = _VISORBindingSelectors()
+
+            @ObservationIgnored
+            private lazy var _visorBindings = VISOR.ViewModelBindings(self)
+
+            var bindings: VISOR.ViewModelBindings<EmptyViewModel> {
+                _visorBindings
+            }
+
             deinit {
             }
         }
@@ -133,6 +156,45 @@ struct ViewModelV11MacroTests {
                 count: _visorInitialSource0[keyPath: \\Snapshot.count],
                 label: _visorInitialSource0[keyPath: \\Snapshot.label],
                 status: _visorInitialSource1)
+            }
+
+            private static let _visorBinding_count = VISOR._ViewModelBinding(
+              for: SourceInitialisedViewModel.self,
+              keyPath: \\State.count
+            ) { model, value in
+              model.updateState(\\.count, to: value)
+            }
+
+            private static let _visorBinding_label = VISOR._ViewModelBinding(
+              for: SourceInitialisedViewModel.self,
+              keyPath: \\State.label
+            ) { model, value in
+              model.updateState(\\.label, to: value)
+            }
+
+            private static let _visorBinding_status = VISOR._ViewModelBinding(
+              for: SourceInitialisedViewModel.self,
+              keyPath: \\State.status
+            ) { model, value in
+              model.updateState(\\.status, to: value)
+            }
+
+            @MainActor
+            public struct _VISORBindingSelectors {
+              public let count = SourceInitialisedViewModel._visorBinding_count
+              public let label = SourceInitialisedViewModel._visorBinding_label
+              public let status = SourceInitialisedViewModel._visorBinding_status
+              public init() {
+              }
+            }
+
+            public static let _visorBindingSelectors = _VISORBindingSelectors()
+
+            @ObservationIgnored
+            private lazy var _visorBindings = VISOR.ViewModelBindings(self)
+
+            public var bindings: VISOR.ViewModelBindings<SourceInitialisedViewModel> {
+                _visorBindings
             }
 
             deinit {
@@ -235,6 +297,29 @@ struct ViewModelV11MacroTests {
 
             let _visorObservationOwnership = VISOR._ViewModelObservationOwnership()
 
+            private static let _visorBinding_count = VISOR._ViewModelBinding(
+              for: CustomViewModel.self,
+              keyPath: \\State.count
+            ) { model, value in
+              model.updateState(\\.count, to: value)
+            }
+
+            @MainActor
+            struct _VISORBindingSelectors {
+              let count = CustomViewModel._visorBinding_count
+              init() {
+              }
+            }
+
+            static let _visorBindingSelectors = _VISORBindingSelectors()
+
+            @ObservationIgnored
+            private lazy var _visorBindings = VISOR.ViewModelBindings(self)
+
+            var bindings: VISOR.ViewModelBindings<CustomViewModel> {
+                _visorBindings
+            }
+
             deinit {
             }
         }
@@ -293,6 +378,22 @@ struct ViewModelV11MacroTests {
               self.openURL = openURL
               self.onDismiss = onDismiss
               self.state = State()
+            }
+
+            @MainActor
+            struct _VISORBindingSelectors {
+
+              init() {
+              }
+            }
+
+            static let _visorBindingSelectors = _VISORBindingSelectors()
+
+            @ObservationIgnored
+            private lazy var _visorBindings = VISOR.ViewModelBindings(self)
+
+            var bindings: VISOR.ViewModelBindings<DependencyViewModel> {
+                _visorBindings
             }
 
             deinit {
@@ -459,6 +560,29 @@ struct ViewModelV11MacroTests {
 
             let _visorObservationOwnership = VISOR._ViewModelObservationOwnership()
 
+            private static let _visorBinding_count = VISOR._ViewModelBinding(
+              for: EmptyViewModel.self,
+              keyPath: \\State.count
+            ) { model, value in
+              model.updateState(\\.count, to: value)
+            }
+
+            @MainActor
+            struct _VISORBindingSelectors {
+              let count = EmptyViewModel._visorBinding_count
+              init() {
+              }
+            }
+
+            static let _visorBindingSelectors = _VISORBindingSelectors()
+
+            @ObservationIgnored
+            private lazy var _visorBindings = VISOR.ViewModelBindings(self)
+
+            var bindings: VISOR.ViewModelBindings<EmptyViewModel> {
+                _visorBindings
+            }
+
             deinit {
             }
         }
@@ -530,6 +654,45 @@ struct ViewModelV11MacroTests {
             init(service: Service, status: StatusService) {
               self.service = service
               self.status = status
+            }
+
+            private static let _visorBinding_count = VISOR._ViewModelBinding(
+              for: SourceViewModel.self,
+              keyPath: \\State.count
+            ) { model, value in
+              model.updateState(\\.count, to: value)
+            }
+
+            private static let _visorBinding_label = VISOR._ViewModelBinding(
+              for: SourceViewModel.self,
+              keyPath: \\State.label
+            ) { model, value in
+              model.updateState(\\.label, to: value)
+            }
+
+            private static let _visorBinding_status = VISOR._ViewModelBinding(
+              for: SourceViewModel.self,
+              keyPath: \\State.status
+            ) { model, value in
+              model.updateState(\\.status, to: value)
+            }
+
+            @MainActor
+            struct _VISORBindingSelectors {
+              let count = SourceViewModel._visorBinding_count
+              let label = SourceViewModel._visorBinding_label
+              let status = SourceViewModel._visorBinding_status
+              init() {
+              }
+            }
+
+            static let _visorBindingSelectors = _VISORBindingSelectors()
+
+            @ObservationIgnored
+            private lazy var _visorBindings = VISOR.ViewModelBindings(self)
+
+            var bindings: VISOR.ViewModelBindings<SourceViewModel> {
+                _visorBindings
             }
 
             deinit {
@@ -617,6 +780,22 @@ struct ViewModelV11MacroTests {
             typealias Factory = ViewModelFactory<ExplicitDeinitViewModel>
 
             let _visorObservationOwnership = VISOR._ViewModelObservationOwnership()
+
+            @MainActor
+            struct _VISORBindingSelectors {
+
+              init() {
+              }
+            }
+
+            static let _visorBindingSelectors = _VISORBindingSelectors()
+
+            @ObservationIgnored
+            private lazy var _visorBindings = VISOR.ViewModelBindings(self)
+
+            var bindings: VISOR.ViewModelBindings<ExplicitDeinitViewModel> {
+                _visorBindings
+            }
         }
 
         extension ExplicitDeinitViewModel: @MainActor ViewModel {
@@ -1272,6 +1451,22 @@ struct ViewModelV11MacroTests {
             typealias Factory = ViewModelFactory<ActionViewModel>
 
             let _visorObservationOwnership = VISOR._ViewModelObservationOwnership()
+
+            @MainActor
+            struct _VISORBindingSelectors {
+
+              init() {
+              }
+            }
+
+            static let _visorBindingSelectors = _VISORBindingSelectors()
+
+            @ObservationIgnored
+            private lazy var _visorBindings = VISOR.ViewModelBindings(self)
+
+            var bindings: VISOR.ViewModelBindings<ActionViewModel> {
+                _visorBindings
+            }
 
             deinit {
             }

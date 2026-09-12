@@ -46,11 +46,12 @@ observable types in the importing source file.
 
 ## Installation
 
-Add VISOR with Swift Package Manager:
+This checkout targets VISOR 12 (unreleased). Use a local checkout while
+evaluating it; after release, add VISOR with Swift Package Manager:
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/avdn-dev/VISOR.git", from: "11.0.0"),
+  .package(url: "https://github.com/avdn-dev/VISOR.git", from: "12.0.0"),
 ]
 ```
 
@@ -200,7 +201,7 @@ func valueChanged(_ value: Value) async { ... }
 
 Source-backed `@Polled`, debounce, and throttle declarations are deliberately absent. Durable latest state belongs in a producer-owned source. Elapsed-time work belongs in an explicitly structured task with an injected `Clock`. Lossless events need an event-specific buffered contract rather than a latest-state source.
 
-## Action bindings and effects (11.1)
+## Model-owned bindings and effects (12.0)
 
 Annotate a single-payload action to keep direct binding syntax while moving
 validation and side effects into the ViewModel:
@@ -219,12 +220,15 @@ func handle(_ action: Action) {
 }
 
 // Inside @LazyViewModel content:
-Toggle("Focus Mode", isOn: bindableState[\.isFocusEnabled])
+Toggle("Focus Mode", isOn: bindings.isFocusEnabled)
 ```
 
 Binding writes call the handler synchronously. `updateState` and source
 projections commit without dispatching an action again. Existing async handlers
-remain supported for ViewModels without `@StateBinding`.
+remain supported for ViewModels without `@StateBinding`. Each model lazily
+retains one stable binding root, including models with authored initialisers.
+Raw State writes never dispatch actions. See [Migrating to VISOR 12](MIGRATION_V12.md)
+for the breaking binding changes.
 
 Retain a `LatestEffect` for replaceable preparation, `SerialEffectQueue` for
 ordered events, or `ConcurrentEffects` for independent work. Each submission
@@ -241,7 +245,7 @@ search.run(for: self) { [service] in
 
 See [Action bindings and managed effects](Sources/VISOR/VISOR.docc/BindingsAndEffects.md)
 for toggling, queue admission, authored initialisers, lifetime, and complete
-effect testing. These APIs are additive in 11.1.
+effect testing. Managed effect APIs are unchanged from 11.1.
 
 ## One-shot coordination
 

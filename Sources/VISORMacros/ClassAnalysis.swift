@@ -5,6 +5,9 @@ extension StructDeclSyntax {
     hasMemberNamed("content")
   }
 
+}
+
+extension DeclGroupSyntax {
   func hasMemberNamed(_ name: String) -> Bool {
     memberBlock.members.contains { member in
       if let variable = member.decl.as(VariableDeclSyntax.self) {
@@ -16,6 +19,10 @@ extension StructDeclSyntax {
       if let function = member.decl.as(FunctionDeclSyntax.self) {
         return function.name.text == name
       }
+      if let type = member.decl.as(StructDeclSyntax.self) { return type.name.text == name }
+      if let type = member.decl.as(ClassDeclSyntax.self) { return type.name.text == name }
+      if let type = member.decl.as(EnumDeclSyntax.self) { return type.name.text == name }
+      if let type = member.decl.as(TypeAliasDeclSyntax.self) { return type.name.text == name }
       return false
     }
   }
